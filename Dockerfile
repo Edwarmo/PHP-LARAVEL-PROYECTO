@@ -1,13 +1,18 @@
 # ── Stage 1: Node build ──────────────────────────────────────
-FROM node:20-alpine AS node-build
+FROM php:8.3-cli-alpine AS node-build
 WORKDIR /app
 
-# Necesitamos vendor/tightenco/ziggy para el build de Vite
+# Instalar Node + npm
+RUN apk add --no-cache nodejs npm
+
+# Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
-RUN apk add --no-cache php83 php83-phar php83-mbstring php83-openssl php83-tokenizer php83-xml php83-xmlwriter php83-dom php83-json
+
+# PHP deps (para Ziggy)
 COPY composer*.json ./
 RUN composer install --no-dev --no-scripts --no-interaction --ignore-platform-reqs
 
+# Node deps + build
 COPY package*.json ./
 RUN npm ci
 COPY . .
