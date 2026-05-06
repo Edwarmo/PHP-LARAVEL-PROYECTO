@@ -6,10 +6,9 @@ cd /var/www
 echo "DB_USERNAME=$DB_USERNAME"
 echo "DB_HOST=$DB_HOST"
 
-# Primero cachear config, LUEGO limpiar
+# Cachear config y rutas (view:cache falla sin config/view.php)
 php artisan config:cache
 php artisan route:cache
-php artisan view:cache
 
 # Migraciones
 php artisan migrate --force
