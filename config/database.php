@@ -97,7 +97,9 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => 'require',
-            'options' => '-c tcp_keepalives_idle=60 -c tcp_keepalives_interval=60',
+            'options' => extension_loaded('pdo_pgsql') ? array_filter([
+                'hostaddr' => '4',
+            ]) : [],
         ],
 
         'sqlsrv' => [
