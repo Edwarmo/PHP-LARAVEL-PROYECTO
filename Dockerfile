@@ -28,6 +28,7 @@ RUN apk add --no-cache \
     libpng-dev \
     oniguruma-dev \
     libxml2-dev \
+    gettext \
     zip unzip curl
 
 # PHP extensions
