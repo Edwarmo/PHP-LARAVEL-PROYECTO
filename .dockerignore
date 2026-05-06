@@ -1,7 +1,4 @@
-.env
-.env.*
 node_modules
-vendor
 .git
 .gitignore
 storage/logs
