@@ -21,7 +21,11 @@ class Space extends Model
     protected $casts = [
         'price_per_hour' => 'decimal:2',
         'is_active'      => 'boolean',
-        'capacity'       => 'integer',
+        'capacity'         => 'integer',
+    ];
+
+    protected $attributes = [
+        'is_active' => true,
     ];
 
     protected static function booted(): void
@@ -51,6 +55,11 @@ class Space extends Model
     public function reservations(): HasMany
     {
         return $this->hasMany(Reservation::class);
+    }
+
+    public function setIsActiveAttribute($value)
+    {
+        $this->attributes['is_active'] = $value ? 'true' : 'false';
     }
 
     public function scopeActive($query)

@@ -43,25 +43,37 @@ class SpaceSeeder extends Seeder
         ];
 
         foreach ($spaces as $data) {
-            $space = Space::firstOrCreate(['slug' => $data['slug']], $data);
+            // Let Eloquent handle the boolean casting
+            $space = Space::updateOrCreate(
+                ['slug' => $data['slug']],
+                $data
+            );
 
             // Lunes a Viernes (1–5): 08:00–18:00
             foreach (range(1, 5) as $day) {
-                Availability::firstOrCreate([
-                    'space_id'    => $space->id,
-                    'day_of_week' => $day,
-                    'start_time'  => '08:00:00',
-                    'end_time'    => '18:00:00',
-                ]);
+                Availability::updateOrCreate(
+                    [
+                        'space_id'    => $space->id,
+                        'day_of_week' => $day,
+                    ],
+                    [
+                        'start_time' => '08:00:00',
+                        'end_time'   => '18:00:00',
+                    ]
+                );
             }
 
             // Sábados (6): 09:00–13:00
-            Availability::firstOrCreate([
-                'space_id'    => $space->id,
-                'day_of_week' => 6,
-                'start_time'  => '09:00:00',
-                'end_time'    => '13:00:00',
-            ]);
+            Availability::updateOrCreate(
+                [
+                    'space_id'    => $space->id,
+                    'day_of_week' => 6,
+                ],
+                [
+                    'start_time' => '09:00:00',
+                    'end_time'   => '13:00:00',
+                ]
+            );
         }
 
         $this->command->info('✅ 3 salas creadas: Sala Andina, Sala Pacífico, Sala Caribe.');
