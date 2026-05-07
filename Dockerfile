@@ -46,19 +46,22 @@ COPY . .
 # Built assets from stage 1
 COPY --from=node-build /app/public/build ./public/build
 
-# Permissions
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html/storage \
-    && chmod -R 755 /var/www/html/bootstrap/cache
+# Create necessary storage directories and set permissions
+RUN mkdir -p storage/framework/sessions \
+    storage/framework/views \
+    storage/framework/cache/data \
+    bootstrap/cache \
+    && chown -R www-data:www-data storage bootstrap/cache \
+    && chmod -R 775 storage bootstrap/cache
 
 # Apache config for Laravel
 COPY docker/000-default.conf /etc/apache2/sites-available/000-default.conf
 RUN a2ensite 000-default
 
-# Start script
-COPY docker/start.sh /start.sh
-RUN sed -i 's/\r//' /start.sh && chmod +x /start.sh
+# Entrypoint script
+COPY docker/start.sh /usr/local/bin/entrypoint.sh
+RUN sed -i 's/\r//' /usr/local/bin/entrypoint.sh && chmod +x /usr/local/bin/entrypoint.sh
 
 EXPOSE 8080
 
-CMD ["/start.sh"]
+ENTRYPOINT ["entrypoint.sh"]
