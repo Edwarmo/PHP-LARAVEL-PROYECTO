@@ -22,6 +22,14 @@ const activateMobileSearch = async () => {
   if (searchInputRef.value) searchInputRef.value.focus()
 }
 
+const handleBlurSearch = () => {
+  if (!search.value) mobileSearchActive.value = false
+}
+
+const handleBlurType = () => {
+  if (!typeFilter.value) mobileTypeActive.value = false
+}
+
 const filteredSpaces = computed(() => {
   let result = props.spaces.data || []
   if (search.value) {
@@ -72,7 +80,7 @@ onMounted(() => {
           placeholder="Buscar sala..."
           class="w-full px-4 py-3 bg-transparent border focus:outline-none transition-colors"
           style="border-color: var(--cyan); color: var(--text-primary); border-radius: 0;"
-          @blur="if(!search) mobileSearchActive = false"
+          @blur="handleBlurSearch"
         />
 
         <!-- Type Toggle -->
@@ -84,7 +92,7 @@ onMounted(() => {
           v-model="typeFilter"
           class="w-full px-4 py-3 border focus:outline-none mt-2"
           style="background: var(--bg-card); border-color: var(--cyan); color: var(--text-primary); border-radius: 0;"
-          @blur="if(!typeFilter) mobileTypeActive = false"
+          @blur="handleBlurType"
         >
           <option value="">Todos los tipos</option>
           <option value="sala">Sala</option>
