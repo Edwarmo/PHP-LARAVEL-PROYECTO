@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: videoconf-app
+    name: videoconf-reservas
     env: docker
     healthCheckPath: /health
     envVars:
@@ -8,32 +8,21 @@ services:
         value: 8080
       - key: APP_ENV
         value: production
-      - key: APP_DEBUG
-        value: "false"
       - key: APP_KEY
-        generateValue: true
+        value: base64:63sY4C2Oa3s5fJ+LWnAMmOHjw6mdm4JxU2ZmqIdzdJs=
+      - key: APP_DEBUG
+        value: false
       - key: DB_CONNECTION
         value: pgsql
-      - key: DB_HOST
-        fromDatabase:
-          name: DATABASE_URL
-          property: host
       - key: DB_PORT
-        value: "6543"
+        value: 6543
       - key: DB_DATABASE
-        fromDatabase:
-          name: DATABASE_URL
-          property: database
-      - key: DB_USERNAME
-        fromDatabase:
-          name: DATABASE_URL
-          property: username
-      - key: DB_PASSWORD
-        fromDatabase:
-          name: DATABASE_URL
-          property: password
-
-databases:
-  - name: DATABASE_URL
-    type: postgresql
-    region: oregon
+        value: postgres
+      - key: DB_SSLMODE
+        value: require
+      - key: SESSION_DRIVER
+        value: cookie
+      - key: CACHE_DRIVER
+        value: array
+      - key: QUEUE_CONNECTION
+        value: sync

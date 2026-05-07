@@ -57,8 +57,8 @@ RUN a2ensite 000-default
 
 # Start script
 COPY docker/start.sh /start.sh
-RUN chmod +x /start.sh
+RUN sed -i 's/\r//' /start.sh && chmod +x /start.sh
 
 EXPOSE 8080
 
-ENTRYPOINT ["/start.sh"]
+CMD ["/start.sh"]

@@ -21,13 +21,14 @@ const typeLabels = {
 
 const handleMouseEnter = () => {
   if (cardRef.value) {
-    gsap.to(cardRef.value, {
+    const el = cardRef.value.$el || cardRef.value
+    gsap.to(el, {
       y: -4,
       scale: 1.01,
       duration: 0.3,
       ease: 'power2.out'
     })
-    cardRef.value.style.borderColor = 'rgba(0, 220, 255, 0.35)'
+    el.style.borderColor = 'rgba(0, 220, 255, 0.35)'
   }
   if (priceRef.value) {
     gsap.to(priceRef.value, {
@@ -39,13 +40,14 @@ const handleMouseEnter = () => {
 
 const handleMouseLeave = () => {
   if (cardRef.value) {
-    gsap.to(cardRef.value, {
+    const el = cardRef.value.$el || cardRef.value
+    gsap.to(el, {
       y: 0,
       scale: 1,
       duration: 0.3,
       ease: 'power2.out'
     })
-    cardRef.value.style.borderColor = 'rgba(0, 220, 255, 0.12)'
+    el.style.borderColor = 'rgba(0, 220, 255, 0.12)'
   }
   if (priceRef.value) {
     gsap.to(priceRef.value, {
