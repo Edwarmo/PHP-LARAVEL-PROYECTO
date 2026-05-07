@@ -1,0 +1,39 @@
+services:
+  - type: web
+    name: videoconf-app
+    env: docker
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_KEY
+        generateValue: true
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        fromDatabase:
+          name: DATABASE_URL
+          property: host
+      - key: DB_PORT
+        value: "6543"
+      - key: DB_DATABASE
+        fromDatabase:
+          name: DATABASE_URL
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: DATABASE_URL
+          property: username
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: DATABASE_URL
+          property: password
+
+databases:
+  - name: DATABASE_URL
+    type: postgresql
+    region: oregon

@@ -2,13 +2,13 @@
 FROM php:8.3-cli-alpine AS node-build
 WORKDIR /app
 
-# Instalar Node + npm
+# Install Node + npm
 RUN apk add --no-cache nodejs npm
 
 # Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# PHP deps (para Ziggy)
+# PHP deps
 COPY composer*.json ./
 RUN composer install --no-dev --no-scripts --no-interaction --ignore-platform-reqs
 
@@ -18,26 +18,23 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-# ── Stage 2: PHP runtime ─────────────────────────────────────
-FROM php:8.3-fpm-alpine
+# ── Stage 2: PHP runtime with Apache ─────────────────────────────
+FROM php:8.3-apache
 
 # System deps
-RUN apk add --no-cache \
-    nginx \
+RUN apt-get update && apt-get install -y \
     postgresql-dev \
     libpng-dev \
-    oniguruma-dev \
+    libonig-dev \
     libxml2-dev \
-    gettext \
-    zip unzip curl
-
-# PHP extensions
-RUN docker-php-ext-install pdo pdo_pgsql mbstring exif pcntl bcmath gd
+    zip unzip curl \
+    && docker-php-ext-install pdo pdo_pgsql mbstring exif pcntl bcmath gd \
+    && a2enmod rewrite
 
 # Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-WORKDIR /var/www
+WORKDIR /var/www/html
 
 # PHP deps
 COPY composer*.json ./
@@ -50,17 +47,18 @@ COPY . .
 COPY --from=node-build /app/public/build ./public/build
 
 # Permissions
-RUN chown -R www-data:www-data /var/www \
-    && chmod -R 755 /var/www/storage \
-    && chmod -R 755 /var/www/bootstrap/cache
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html/storage \
+    && chmod -R 755 /var/www/html/bootstrap/cache
 
-# Nginx config
-COPY docker/nginx.conf /etc/nginx/nginx.conf
+# Apache config for Laravel
+COPY docker/000-default.conf /etc/apache2/sites-available/000-default.conf
+RUN a2ensite 000-default
 
-# Entrypoint
-COPY docker/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+# Start script
+COPY docker/start.sh /start.sh
+RUN chmod +x /start.sh
 
 EXPOSE 8080
 
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/start.sh"]

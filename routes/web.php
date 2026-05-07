@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [SpaceController::class, 'index'])->name('spaces.index');
 
+Route::get('/health', fn() => response()->json(['status' => 'ok']));
+
 Route::get('/spaces/{space:slug}', [SpaceController::class, 'show'])->name('spaces.show');
 
 Route::get('/reservations/new', [ReservationController::class, 'create'])->name('reservations.create');

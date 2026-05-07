@@ -136,13 +136,13 @@ final class AvailabilityServiceTest extends TestCase
     public function slot_ocupado_por_bloqueo_manual_retorna_false(): void
     {
         $monday = Carbon::now()->next(Carbon::MONDAY);
-        $start  = $monday->copy()->setTime(09, 0);
+        $start  = $monday->copy()->setTime(9, 0);
         $end    = $monday->copy()->setTime(10, 0);
 
         BlockedSlot::factory()->create([
             'space_id'   => $this->space->id,
-            'start_time' => $monday->copy()->setTime(08, 30),
-            'end_time'   => $monday->copy()->setTime(09, 30),  // solapa
+'start_time' => $monday->copy()->setTime(8, 30),
+        'end_time'   => $monday->copy()->setTime(9, 30),  // solapa
             'reason'     => 'Mantenimiento de equipos',
         ]);
 
@@ -161,8 +161,8 @@ final class AvailabilityServiceTest extends TestCase
         // Bloqueo termina justo cuando empieza el slot → no solapa
         BlockedSlot::factory()->create([
             'space_id'   => $this->space->id,
-            'start_time' => $monday->copy()->setTime(09, 0),
-            'end_time'   => $monday->copy()->setTime(10, 0),
+'start_time' => $monday->copy()->setTime(9, 0),
+        'end_time'   => $monday->copy()->setTime(10, 0),
         ]);
 
         $result = $this->service->isSlotAvailable($this->space, $start, $end);
