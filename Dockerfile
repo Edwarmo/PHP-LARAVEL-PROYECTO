@@ -23,7 +23,7 @@ FROM php:8.3-apache
 
 # System deps
 RUN apt-get update && apt-get install -y \
-    postgresql-dev \
+    libpq-dev \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
