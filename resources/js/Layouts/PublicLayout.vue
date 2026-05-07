@@ -7,6 +7,7 @@ import gsap from 'gsap'
 const page = usePage()
 const navbarRef = ref(null)
 const isScrolled = ref(false)
+const isMobileMenuOpen = ref(false)
 
 onMounted(() => {
   // Animación de entrada del navbar
@@ -48,19 +49,58 @@ onMounted(() => {
             <span class="font-sans font-medium text-[#f0f4f8]">VideoConf<span class="text-[#00dcff]">.</span></span>
           </Link>
 
-          <!-- Nav Links -->
-          <nav class="flex items-center gap-8">
+          <!-- Mobile Menu Button -->
+          <button 
+            @click="isMobileMenuOpen = !isMobileMenuOpen" 
+            class="md:hidden flex items-center justify-center w-11 h-11 text-[#00dcff] hover:bg-[#00dcff]/10 transition-colors"
+            aria-label="Toggle Menu"
+          >
+            <svg v-if="!isMobileMenuOpen" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+            <svg v-else class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          <!-- Desktop Nav Links -->
+          <nav class="hidden md:flex items-center gap-8">
             <Link
               href="/"
-              class="font-mono text-xs font-light lowercase tracking-wide transition-colors"
+              class="font-mono text-xs font-light lowercase tracking-wide transition-colors flex items-center h-11"
               :class="$page.url === '/' ? 'text-[#f0f4f8] border-b border-[rgba(240,244,248,0.4)]' : 'text-[#5a7080] hover:text-[#f0f4f8]'"
             >
               salas
             </Link>
             <Link
               href="/historial"
-              class="font-mono text-xs font-light lowercase tracking-wide transition-colors"
+              class="font-mono text-xs font-light lowercase tracking-wide transition-colors flex items-center h-11"
               :class="$page.url === '/historial' ? 'text-[#f0f4f8] border-b border-[rgba(240,244,248,0.4)]' : 'text-[#5a7080] hover:text-[#f0f4f8]'"
+            >
+              historial
+            </Link>
+          </nav>
+        </div>
+
+        <!-- Mobile Dropdown Menu -->
+        <div 
+          v-show="isMobileMenuOpen" 
+          class="md:hidden absolute top-full left-0 w-full bg-[#0c1018] border-b border-[rgba(0,220,255,0.12)] shadow-xl"
+        >
+          <nav class="flex flex-col px-6 py-4">
+            <Link
+              href="/"
+              @click="isMobileMenuOpen = false"
+              class="font-mono text-sm font-light lowercase tracking-wide transition-colors flex items-center h-12 w-full border-b border-[rgba(255,255,255,0.05)]"
+              :class="$page.url === '/' ? 'text-[#f0f4f8]' : 'text-[#5a7080] hover:text-[#f0f4f8]'"
+            >
+              salas
+            </Link>
+            <Link
+              href="/historial"
+              @click="isMobileMenuOpen = false"
+              class="font-mono text-sm font-light lowercase tracking-wide transition-colors flex items-center h-12 w-full"
+              :class="$page.url === '/historial' ? 'text-[#f0f4f8]' : 'text-[#5a7080] hover:text-[#f0f4f8]'"
             >
               historial
             </Link>

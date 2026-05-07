@@ -43,7 +43,7 @@ onMounted(() => {
     <div class="max-w-4xl mx-auto px-4 py-12">
       <!-- Header -->
       <div class="mb-8">
-        <h1 class="text-4xl font-light mb-2" style="font-family: 'Cormorant Garamond', serif; color: var(--text-primary);">
+        <h1 class="text-3xl md:text-5xl lg:text-7xl font-light mb-2 break-words" style="font-family: 'Cormorant Garamond', serif; color: var(--text-primary);">
           Historial de Reservas
         </h1>
         <p class="text-sm" style="font-family: 'DM Sans', sans-serif; color: var(--text-muted);">
@@ -53,20 +53,20 @@ onMounted(() => {
 
       <!-- Search Form -->
       <div class="mb-8">
-        <form @submit.prevent="search" class="flex gap-4">
+        <form @submit.prevent="search" class="flex flex-col sm:flex-row gap-4">
           <input
             v-model="searchEmail"
             type="email"
             placeholder="tu@email.com"
             required
-            class="flex-1 px-4 py-3 bg-transparent border-b focus:outline-none transition-colors"
+            class="w-full sm:flex-1 px-4 py-3 bg-transparent border-b focus:outline-none transition-colors"
             style="border-color: var(--border); color: var(--text-primary); font-family: 'DM Sans', sans-serif; border-radius: 0;"
             @focus="$event.target.style.borderColor = 'var(--cyan)'"
             @blur="$event.target.style.borderColor = 'var(--border)'"
           />
           <button
             type="submit"
-            class="px-6 py-3 border text-xs uppercase font-medium tracking-wider transition-colors"
+            class="w-full sm:w-auto px-6 py-3 border text-xs uppercase font-medium tracking-wider transition-colors"
             style="border-color: var(--cyan); color: var(--cyan); background: transparent; border-radius: 0;"
             @mouseenter="$event.target.style.background = 'var(--cyan)'; $event.target.style.color = '#000'"
             @mouseleave="$event.target.style.background = 'transparent'; $event.target.style.color = 'var(--cyan)'"
@@ -91,7 +91,7 @@ onMounted(() => {
           @mouseenter="$event.currentTarget.style.background = 'var(--bg-card)'"
           @mouseleave="$event.currentTarget.style.background = 'var(--bg-base)'"
         >
-          <div class="flex items-start justify-between mb-4">
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-4">
             <div class="flex-1">
               <h3 class="text-xl font-light mb-1" style="font-family: 'Cormorant Garamond', serif; color: var(--text-primary);">
                 {{ reservation.space_name }}
@@ -103,7 +103,7 @@ onMounted(() => {
             <StatusBadge :status="reservation.status" />
           </div>
 
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <div class="font-mono text-xs uppercase tracking-wider mb-1" style="color: var(--text-dim);">Fecha</div>
               <div class="text-sm" style="font-family: 'DM Sans', sans-serif; color: var(--text-primary);">

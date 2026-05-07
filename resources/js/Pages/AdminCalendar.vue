@@ -86,10 +86,10 @@ watch(selectedSpace, (val) => {
   <PublicLayout>
     <div class="max-w-7xl mx-auto px-4 py-8">
       <!-- Header -->
-      <div class="flex items-center justify-between mb-8">
+      <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
         <select
           v-model="selectedSpace"
-          class="px-4 py-2 border bg-transparent focus:outline-none transition-colors"
+          class="w-full md:w-auto px-4 py-3 md:py-2 border bg-transparent focus:outline-none transition-colors"
           style="border-color: var(--border); color: var(--text-primary); border-radius: 0; font-family: 'DM Sans', sans-serif;"
         >
           <option value="">Todos los espacios</option>
@@ -98,7 +98,7 @@ watch(selectedSpace, (val) => {
           </option>
         </select>
 
-        <div class="flex items-center gap-6">
+        <div class="flex items-center justify-between md:justify-start gap-6">
           <button
             @click="navigateWeek(prevWeek)"
             class="text-2xl transition-colors"
@@ -108,7 +108,7 @@ watch(selectedSpace, (val) => {
           >
             ←
           </button>
-          <h1 class="text-2xl font-light" style="font-family: 'Cormorant Garamond', serif; color: var(--text-primary);">
+          <h1 class="text-xl sm:text-2xl font-light text-center" style="font-family: 'Cormorant Garamond', serif; color: var(--text-primary);">
             {{ weekTitle }}
           </h1>
           <button
@@ -124,68 +124,70 @@ watch(selectedSpace, (val) => {
       </div>
 
       <!-- Calendar Grid -->
-      <div class="calendar-grid">
-        <!-- Day Headers -->
-        <div class="grid grid-cols-7 gap-2 mb-4">
-          <div
-            v-for="(day, i) in weekDays"
-            :key="i"
-            class="text-center"
-          >
-            <div class="font-mono text-xs uppercase" style="color: var(--text-dim);">
-              {{ day.label.split(' ')[0] }}
-            </div>
+      <div class="calendar-grid overflow-x-auto">
+        <div class="min-w-[700px]">
+          <!-- Day Headers -->
+          <div class="grid grid-cols-7 gap-2 mb-4">
             <div
-              class="text-xl font-light mt-1"
-              :class="{ 'border-b-2': day.date === today }"
-              :style="{
-                fontFamily: 'Cormorant Garamond, serif',
-                color: 'var(--text-primary)',
-                borderColor: day.date === today ? 'var(--cyan)' : 'transparent'
-              }"
+              v-for="(day, i) in weekDays"
+              :key="i"
+              class="text-center"
             >
-              {{ day.label.split(' ')[1].split('/')[0] }}
+              <div class="font-mono text-xs uppercase" style="color: var(--text-dim);">
+                {{ day.label.split(' ')[0] }}
+              </div>
+              <div
+                class="text-xl font-light mt-1"
+                :class="{ 'border-b-2': day.date === today }"
+                :style="{
+                  fontFamily: 'Cormorant Garamond, serif',
+                  color: 'var(--text-primary)',
+                  borderColor: day.date === today ? 'var(--cyan)' : 'transparent'
+                }"
+              >
+                {{ day.label.split(' ')[1].split('/')[0] }}
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- Slots Grid -->
-        <div class="grid grid-cols-7 gap-2">
-          <div
-            v-for="(dayReservations, dayIndex) in reservationsByDay"
-            :key="dayIndex"
-            class="space-y-2"
-          >
-            <!-- Empty Slot -->
+          <!-- Slots Grid -->
+          <div class="grid grid-cols-7 gap-2">
             <div
-              v-if="!dayReservations.length"
-              class="border p-3 text-center transition-colors cursor-pointer"
-              style="border-color: var(--border); background: transparent; border-radius: 0;"
-              @mouseenter="$event.target.style.borderColor = 'var(--cyan)'"
-              @mouseleave="$event.target.style.borderColor = 'var(--border)'"
+              v-for="(dayReservations, dayIndex) in reservationsByDay"
+              :key="dayIndex"
+              class="space-y-2"
             >
-              <div class="font-mono text-xs" style="color: var(--cyan);">Disponible</div>
-            </div>
+              <!-- Empty Slot -->
+              <div
+                v-if="!dayReservations.length"
+                class="border p-3 text-center transition-colors cursor-pointer"
+                style="border-color: var(--border); background: transparent; border-radius: 0;"
+                @mouseenter="$event.target.style.borderColor = 'var(--cyan)'"
+                @mouseleave="$event.target.style.borderColor = 'var(--border)'"
+              >
+                <div class="font-mono text-xs" style="color: var(--cyan);">Disponible</div>
+              </div>
 
-            <!-- Reservations -->
-            <div
-              v-for="reservation in dayReservations"
-              :key="reservation.slug"
-              @click="selectReservation(reservation)"
-              class="border p-3 cursor-pointer transition-colors"
-              :style="{
-                background: reservation.status === 'pendiente' ? 'rgba(240,192,64,0.1)' : 'rgba(0,220,255,0.08)',
-                borderColor: reservation.status === 'pendiente' ? '#eab308' : 'var(--cyan)',
-                borderRadius: 0
-              }"
-            >
-              <div class="font-mono text-xs" style="color: var(--cyan);">
-                {{ formatTime(reservation.start_time) }}
+              <!-- Reservations -->
+              <div
+                v-for="reservation in dayReservations"
+                :key="reservation.slug"
+                @click="selectReservation(reservation)"
+                class="border p-3 cursor-pointer transition-colors"
+                :style="{
+                  background: reservation.status === 'pendiente' ? 'rgba(240,192,64,0.1)' : 'rgba(0,220,255,0.08)',
+                  borderColor: reservation.status === 'pendiente' ? '#eab308' : 'var(--cyan)',
+                  borderRadius: 0
+                }"
+              >
+                <div class="font-mono text-xs" style="color: var(--cyan);">
+                  {{ formatTime(reservation.start_time) }}
+                </div>
+                <div class="text-xs mt-1" style="font-family: 'DM Sans', sans-serif; color: var(--text-muted);">
+                  {{ reservation.user_name }}
+                </div>
+                <StatusBadge :status="reservation.status" class="mt-2" />
               </div>
-              <div class="text-xs mt-1" style="font-family: 'DM Sans', sans-serif; color: var(--text-muted);">
-                {{ reservation.user_name }}
-              </div>
-              <StatusBadge :status="reservation.status" class="mt-2" />
             </div>
           </div>
         </div>
@@ -198,7 +200,7 @@ watch(selectedSpace, (val) => {
       >
         <div
           v-if="showPanel && selectedReservation"
-          class="fixed right-0 top-0 h-full w-96 border-l p-6 overflow-y-auto"
+          class="fixed right-0 top-0 h-full w-full sm:w-96 border-l p-6 overflow-y-auto z-[60]"
           style="background: var(--bg-base); border-color: var(--border);"
         >
           <button

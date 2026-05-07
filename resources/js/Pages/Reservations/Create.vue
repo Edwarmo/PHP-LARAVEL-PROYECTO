@@ -94,7 +94,7 @@ onMounted(() => {
         <!-- Section 1: Summary -->
         <div class="reveal-block border p-6" style="background: var(--bg-card); border-color: var(--border); border-radius: 0;">
           <div class="font-mono text-xs uppercase tracking-wide mb-4" style="color: var(--text-dim);">Resumen</div>
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <div class="font-mono text-xs uppercase tracking-wider mb-1" style="color: var(--text-dim);">Espacio</div>
               <div class="text-sm" style="color: var(--cyan); font-family: 'DM Sans', sans-serif;">{{ space?.name || 'N/A' }}</div>
@@ -111,7 +111,7 @@ onMounted(() => {
               <div class="font-mono text-xs uppercase tracking-wider mb-1" style="color: var(--text-dim);">Duración</div>
               <div class="text-sm font-mono" style="color: var(--text-primary);">{{ duration }} min</div>
             </div>
-            <div class="col-span-2">
+            <div class="col-span-1 sm:col-span-2">
               <div class="font-mono text-xs uppercase tracking-wider mb-1" style="color: var(--text-dim);">Precio est.</div>
               <div class="text-sm font-mono" style="color: var(--lime);">${{ estimatedPrice.toLocaleString('es-CO') }}</div>
             </div>
@@ -128,7 +128,7 @@ onMounted(() => {
               <input
                 v-model="form.user_name"
                 type="text"
-                class="w-full bg-transparent border-b py-2 focus:outline-none transition-colors"
+                class="w-full bg-transparent border-b py-3 focus:outline-none transition-colors"
                 style="border-color: var(--border); color: var(--text-primary); font-family: 'DM Sans', sans-serif; border-radius: 0;"
                 @focus="$event.target.style.borderColor = 'var(--cyan)'"
                 @blur="$event.target.style.borderColor = 'var(--border)'"
@@ -141,7 +141,7 @@ onMounted(() => {
               <input
                 v-model="form.user_email"
                 type="email"
-                class="w-full bg-transparent border-b py-2 focus:outline-none transition-colors"
+                class="w-full bg-transparent border-b py-3 focus:outline-none transition-colors"
                 style="border-color: var(--border); color: var(--text-primary); font-family: 'DM Sans', sans-serif; border-radius: 0;"
                 @focus="$event.target.style.borderColor = 'var(--cyan)'"
                 @blur="$event.target.style.borderColor = 'var(--border)'"
@@ -154,7 +154,7 @@ onMounted(() => {
               <textarea
                 v-model="form.notes"
                 rows="3"
-                class="w-full bg-transparent border-b py-2 focus:outline-none transition-colors resize-none"
+                class="w-full bg-transparent border-b py-3 focus:outline-none transition-colors resize-none"
                 style="border-color: var(--border); color: var(--text-primary); font-family: 'DM Sans', sans-serif; border-radius: 0;"
                 @focus="$event.target.style.borderColor = 'var(--cyan)'"
                 @blur="$event.target.style.borderColor = 'var(--border)'"

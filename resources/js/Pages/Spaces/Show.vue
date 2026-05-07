@@ -67,7 +67,7 @@ onMounted(() => {
             <span class="font-mono text-xs" style="color: var(--text-dim);">{{ space.capacity }} personas</span>
           </div>
 
-          <h1 class="reveal-left text-5xl font-light mt-4" style="font-family: 'Cormorant Garamond', serif; color: var(--text-primary);">
+          <h1 class="reveal-left text-3xl md:text-5xl lg:text-7xl font-light mt-4 break-words" style="font-family: 'Cormorant Garamond', serif; color: var(--text-primary);">
             {{ space.name }}
           </h1>
 
@@ -95,11 +95,11 @@ onMounted(() => {
         </div>
 
         <!-- Right Column -->
-        <div class="sticky top-24 h-fit">
+        <div class="sticky top-24 h-fit mt-8 lg:mt-0">
           <div class="font-mono text-xs uppercase tracking-wide mb-4" style="color: var(--text-dim);">Disponibilidad</div>
 
           <!-- Day Tabs -->
-          <div class="flex gap-px mb-4 overflow-x-auto" style="scrollbar-width: none; -ms-overflow-style: none;">
+          <div class="flex gap-px mb-4 overflow-x-auto pb-2" style="scrollbar-width: none; -ms-overflow-style: none;">
             <button
               v-for="day in nextAvailableDays"
               :key="day.date"
@@ -121,15 +121,15 @@ onMounted(() => {
           </div>
 
           <!-- Slots -->
-          <div class="space-y-px">
-            <div v-if="loadingSlots" class="py-8 text-center font-mono text-xs" style="color: var(--text-dim);">cargando...</div>
+          <div class="grid grid-cols-2 lg:grid-cols-1 gap-px">
+            <div v-if="loadingSlots" class="col-span-full py-8 text-center font-mono text-xs" style="color: var(--text-dim);">cargando...</div>
             <button
               v-else
               v-for="slot in slotsForDate"
               :key="slot.label"
               @click="bookSlot(slot)"
               :disabled="!slot.available"
-              class="slot-item w-full py-2.5 px-4 text-left transition-colors"
+              class="slot-item w-full py-3 px-4 text-center lg:text-left transition-colors"
               :style="{
                 background: 'transparent',
                 borderBottom: '0.5px solid var(--border)',

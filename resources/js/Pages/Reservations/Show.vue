@@ -46,9 +46,9 @@ onMounted(() => {
         <div class="font-mono text-xs uppercase tracking-wide mb-4" style="color: var(--text-dim);">Reserva actual</div>
         
         <div class="border p-6" style="background: var(--bg-card); border-color: var(--border); border-radius: 0;">
-          <div class="flex items-start justify-between mb-6">
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
             <div>
-              <h1 class="text-3xl font-light mb-2" style="font-family: 'Cormorant Garamond', serif; color: var(--text-primary);">
+              <h1 class="text-3xl md:text-4xl lg:text-5xl font-light mb-2 break-words" style="font-family: 'Cormorant Garamond', serif; color: var(--text-primary);">
                 {{ reservation.space.name }}
               </h1>
               <p class="text-sm" style="font-family: 'DM Sans', sans-serif; color: var(--text-muted);">
@@ -58,7 +58,7 @@ onMounted(() => {
             <StatusBadge :status="reservation.status" />
           </div>
 
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <div class="font-mono text-xs uppercase tracking-wider mb-1" style="color: var(--text-dim);">Fecha</div>
               <div class="text-sm" style="font-family: 'DM Sans', sans-serif; color: var(--text-primary);">{{ formatDate(reservation.start_time) }}</div>
@@ -75,7 +75,7 @@ onMounted(() => {
               <div class="font-mono text-xs uppercase tracking-wider mb-1" style="color: var(--text-dim);">Email</div>
               <div class="text-sm" style="font-family: 'DM Sans', sans-serif; color: var(--text-primary);">{{ reservation.user_email }}</div>
             </div>
-            <div v-if="reservation.notes" class="col-span-2">
+            <div v-if="reservation.notes" class="col-span-1 sm:col-span-2">
               <div class="font-mono text-xs uppercase tracking-wider mb-1" style="color: var(--text-dim);">Notas</div>
               <div class="text-sm" style="font-family: 'DM Sans', sans-serif; color: var(--text-muted);">{{ reservation.notes }}</div>
             </div>

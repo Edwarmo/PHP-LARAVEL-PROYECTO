@@ -48,10 +48,10 @@ onMounted(() => {
   <PublicLayout>
     <div class="max-w-7xl mx-auto px-4 py-8">
       <!-- Filters -->
-      <div class="flex gap-4 mb-8 flex-wrap">
+      <div class="flex flex-col sm:flex-row gap-4 mb-8 sm:flex-wrap">
         <select
           v-model="form.space_id"
-          class="px-4 py-2 border bg-transparent focus:outline-none"
+          class="w-full sm:w-auto px-4 py-3 sm:py-2 border bg-transparent focus:outline-none"
           style="border-color: var(--border); color: var(--text-primary); border-radius: 0; font-family: 'DM Sans', sans-serif;"
         >
           <option value="">Todos los espacios</option>
@@ -62,7 +62,7 @@ onMounted(() => {
 
         <select
           v-model="form.status"
-          class="px-4 py-2 border bg-transparent focus:outline-none"
+          class="w-full sm:w-auto px-4 py-3 sm:py-2 border bg-transparent focus:outline-none"
           style="border-color: var(--border); color: var(--text-primary); border-radius: 0; font-family: 'DM Sans', sans-serif;"
         >
           <option value="">Todos los estados</option>
@@ -75,7 +75,7 @@ onMounted(() => {
           v-model="form.from"
           type="date"
           placeholder="Desde"
-          class="px-4 py-2 border bg-transparent focus:outline-none"
+          class="w-full sm:w-auto px-4 py-3 sm:py-2 border bg-transparent focus:outline-none"
           style="border-color: var(--border); color: var(--text-primary); border-radius: 0; font-family: 'DM Sans', sans-serif;"
         />
 
@@ -83,13 +83,13 @@ onMounted(() => {
           v-model="form.to"
           type="date"
           placeholder="Hasta"
-          class="px-4 py-2 border bg-transparent focus:outline-none"
+          class="w-full sm:w-auto px-4 py-3 sm:py-2 border bg-transparent focus:outline-none"
           style="border-color: var(--border); color: var(--text-primary); border-radius: 0; font-family: 'DM Sans', sans-serif;"
         />
 
         <button
           @click="applyFilters"
-          class="px-6 py-2 border text-xs uppercase font-medium tracking-wider transition-colors"
+          class="w-full sm:w-auto px-6 py-3 sm:py-2 border text-xs uppercase font-medium tracking-wider transition-colors"
           style="border-color: var(--cyan); color: var(--cyan); background: transparent; border-radius: 0;"
           @mouseenter="$event.target.style.background = 'var(--cyan)'; $event.target.style.color = '#000'"
           @mouseleave="$event.target.style.background = 'transparent'; $event.target.style.color = 'var(--cyan)'"
@@ -99,70 +99,62 @@ onMounted(() => {
       </div>
 
       <!-- Table -->
-      <div class="overflow-x-auto">
-        <table class="w-full border-t" style="border-collapse: collapse; border-color: var(--border);">
-          <thead>
-            <tr>
-              <th class="text-left py-3 px-4 font-mono text-xs uppercase border-b" style="color: var(--text-dim); border-color: var(--border);">
-                Espacio
-              </th>
-              <th class="text-left py-3 px-4 font-mono text-xs uppercase border-b" style="color: var(--text-dim); border-color: var(--border);">
-                Usuario
-              </th>
-              <th class="text-left py-3 px-4 font-mono text-xs uppercase border-b" style="color: var(--text-dim); border-color: var(--border);">
-                Fecha
-              </th>
-              <th class="text-left py-3 px-4 font-mono text-xs uppercase border-b" style="color: var(--text-dim); border-color: var(--border);">
-                Hora
-              </th>
-              <th class="text-left py-3 px-4 font-mono text-xs uppercase border-b" style="color: var(--text-dim); border-color: var(--border);">
-                Estado
-              </th>
-              <th class="text-left py-3 px-4 font-mono text-xs uppercase border-b" style="color: var(--text-dim); border-color: var(--border);">
-                Acciones
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="reservation in reservations.data"
-              :key="reservation.slug"
-              class="table-row transition-colors"
-              style="font-family: 'DM Sans', sans-serif; font-size: 0.875rem; color: var(--text-primary);"
-              @mouseenter="$event.currentTarget.style.background = 'var(--bg-card)'"
-              @mouseleave="$event.currentTarget.style.background = 'transparent'"
+      <div class="border" style="border-color: var(--border); border-radius: 0;">
+        <!-- Header -->
+        <div class="hidden md:grid grid-cols-6 gap-4 p-4 border-b font-mono text-xs uppercase" style="border-color: var(--border); color: var(--text-dim);">
+          <div>Espacio</div>
+          <div>Usuario</div>
+          <div>Fecha</div>
+          <div>Hora</div>
+          <div>Estado</div>
+          <div>Acciones</div>
+        </div>
+
+        <!-- Rows -->
+        <div
+          v-for="reservation in reservations.data"
+          :key="reservation.slug"
+          class="table-row flex flex-col md:grid md:grid-cols-6 gap-2 md:gap-4 p-4 border-b transition-colors hover:cursor-pointer"
+          style="border-color: rgba(var(--border-hover), 0.3); font-family: 'DM Sans', sans-serif; font-size: 0.875rem;"
+          @mouseenter="$event.currentTarget.style.background = 'var(--bg-card)'"
+          @mouseleave="$event.currentTarget.style.background = 'transparent'"
+        >
+          <div class="flex justify-between md:block items-center">
+            <span class="md:hidden font-mono text-xs" style="color: var(--text-dim);">Espacio:</span>
+            <span style="color: var(--text-primary);">{{ reservation.space_name }}</span>
+          </div>
+          <div class="flex justify-between md:block items-center">
+            <span class="md:hidden font-mono text-xs" style="color: var(--text-dim);">Usuario:</span>
+            <span style="color: var(--text-primary);">{{ reservation.user_name }}</span>
+          </div>
+          <div class="flex justify-between md:block items-center">
+            <span class="md:hidden font-mono text-xs" style="color: var(--text-dim);">Fecha:</span>
+            <span style="color: var(--text-primary);">{{ formatDate(reservation.start_time) }}</span>
+          </div>
+          <div class="flex justify-between md:block items-center">
+            <span class="md:hidden font-mono text-xs" style="color: var(--text-dim);">Hora:</span>
+            <span class="font-mono text-xs" style="color: var(--lime);">{{ formatTime(reservation.start_time) }}</span>
+          </div>
+          <div class="flex justify-between md:block items-center">
+            <span class="md:hidden font-mono text-xs" style="color: var(--text-dim);">Estado:</span>
+            <StatusBadge :status="reservation.status" />
+          </div>
+          <div class="flex justify-end md:justify-start mt-2 md:mt-0">
+            <Link
+              :href="`/admin/reservations/${reservation.slug}`"
+              class="px-2 py-1 border text-xs uppercase transition-colors"
+              style="border-color: var(--border); color: var(--cyan); border-radius: 0;"
+              @mouseenter="$event.target.style.borderColor = 'var(--cyan)'"
+              @mouseleave="$event.target.style.borderColor = 'var(--border)'"
             >
-              <td class="py-4 px-4 border-b" style="border-color: rgba(0,220,255,0.06);">
-                {{ reservation.space_name }}
-              </td>
-              <td class="py-4 px-4 border-b" style="border-color: rgba(0,220,255,0.06);">
-                {{ reservation.user_name }}
-              </td>
-              <td class="py-4 px-4 border-b" style="border-color: rgba(0,220,255,0.06);">
-                {{ formatDate(reservation.start_time) }}
-              </td>
-              <td class="py-4 px-4 border-b font-mono text-xs" style="border-color: rgba(0,220,255,0.06); color: var(--lime);">
-                {{ formatTime(reservation.start_time) }}
-              </td>
-              <td class="py-4 px-4 border-b" style="border-color: rgba(0,220,255,0.06);">
-                <StatusBadge :status="reservation.status" />
-              </td>
-              <td class="py-4 px-4 border-b" style="border-color: rgba(0,220,255,0.06);">
-                <div class="flex gap-2">
-                  <Link
-                    :href="`/admin/reservations/${reservation.slug}`"
-                    class="px-2 py-1 border text-xs uppercase transition-colors"
-                    style="border-color: var(--border); color: var(--cyan); border-radius: 0;"
-                    @mouseenter="$event.target.style.borderColor = 'var(--cyan)'"
-                    @mouseleave="$event.target.style.borderColor = 'var(--border)'"
-                  >
-                    Ver
-                  </Link>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+              Ver
+            </Link>
+          </div>
+        </div>
+        
+        <div v-if="!reservations.data.length" class="p-12 text-center font-mono text-xs" style="color: var(--text-dim);">
+          — SIN RESULTADOS —
+        </div>
       </div>
 
       <!-- Pagination -->

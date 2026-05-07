@@ -96,7 +96,7 @@ onMounted(() => {
         
         <div class="border" style="border-color: var(--border); border-radius: 0;">
           <!-- Header -->
-          <div class="grid grid-cols-5 gap-4 p-4 border-b font-mono text-xs uppercase" style="border-color: var(--border); color: var(--text-dim);">
+          <div class="hidden md:grid grid-cols-5 gap-4 p-4 border-b font-mono text-xs uppercase" style="border-color: var(--border); color: var(--text-dim);">
             <div>Espacio</div>
             <div>Usuario</div>
             <div>Fecha</div>
@@ -108,20 +108,28 @@ onMounted(() => {
           <div
             v-for="reserva in pendientes"
             :key="reserva.slug"
-            class="grid grid-cols-5 gap-4 p-4 border-b transition-colors hover:cursor-pointer"
+            class="flex flex-col md:grid md:grid-cols-5 gap-2 md:gap-4 p-4 border-b transition-colors hover:cursor-pointer"
             style="border-color: rgba(var(--border-hover), 0.3); font-family: 'DM Sans', sans-serif; font-size: 0.875rem;"
             @mouseenter="$event.currentTarget.style.background = 'var(--bg-card)'"
             @mouseleave="$event.currentTarget.style.background = 'transparent'"
           >
-            <div style="color: var(--text-primary);">{{ reserva.space_name }}</div>
-            <div style="color: var(--text-muted);">{{ reserva.user_name }}</div>
-            <div class="font-mono text-xs" style="color: var(--text-muted);">
-              {{ formatDate(reserva.start_time) }} {{ formatTime(reserva.start_time) }}
+            <div class="flex justify-between md:block items-center">
+              <span class="md:hidden font-mono text-xs" style="color: var(--text-dim);">Espacio:</span>
+              <span style="color: var(--text-primary);">{{ reserva.space_name }}</span>
             </div>
-            <div>
+            <div class="flex justify-between md:block items-center">
+              <span class="md:hidden font-mono text-xs" style="color: var(--text-dim);">Usuario:</span>
+              <span style="color: var(--text-muted);">{{ reserva.user_name }}</span>
+            </div>
+            <div class="flex justify-between md:block items-center font-mono text-xs" style="color: var(--text-muted);">
+              <span class="md:hidden font-mono text-xs" style="color: var(--text-dim);">Fecha:</span>
+              <span>{{ formatDate(reserva.start_time) }} {{ formatTime(reserva.start_time) }}</span>
+            </div>
+            <div class="flex justify-between md:block items-center">
+              <span class="md:hidden font-mono text-xs" style="color: var(--text-dim);">Estado:</span>
               <StatusBadge status="pendiente" />
             </div>
-            <div class="flex gap-2">
+            <div class="flex gap-2 mt-2 md:mt-0 justify-end md:justify-start">
               <Link
                 :href="`/admin/reservations/${reserva.slug}`"
                 class="px-3 py-1 border text-xs uppercase transition-colors"

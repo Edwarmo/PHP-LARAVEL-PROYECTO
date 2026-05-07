@@ -32,34 +32,34 @@ onMounted(() => {
   <Head title="Salas Disponibles" />
   <PublicLayout>
     <!-- Hero -->
-    <div class="h-48 flex flex-col items-center justify-center hero-title">
-      <div class="font-mono text-xs uppercase tracking-[0.3em]" style="color: var(--text-dim);">
+    <div class="min-h-[12rem] flex flex-col items-center justify-center hero-title px-4">
+      <div class="font-mono text-xs uppercase tracking-[0.3em] text-center" style="color: var(--text-dim);">
         RESERVAS
       </div>
-      <h1 class="text-5xl mt-2" style="font-family: 'Cormorant Garamond', serif;">
-        <span class="font-light" style="color: var(--text-primary);">Salas de</span>
+      <h1 class="text-4xl md:text-5xl lg:text-7xl mt-2 text-center break-words max-w-full" style="font-family: 'Cormorant Garamond', serif;">
+        <span class="font-light block sm:inline" style="color: var(--text-primary);">Salas de </span>
         <span style="color: var(--cyan);">Videoconferencia</span>
       </h1>
-      <p class="text-sm mt-3" style="font-family: 'DM Sans', sans-serif; color: var(--text-muted);">
+      <p class="text-sm md:text-base mt-3 text-center" style="font-family: 'DM Sans', sans-serif; color: var(--text-muted);">
         Encuentra el espacio perfecto para tus reuniones virtuales
       </p>
     </div>
 
     <!-- Filters -->
     <div class="max-w-7xl mx-auto px-4 mt-8">
-      <div class="flex gap-4">
+      <div class="flex flex-col sm:flex-row gap-4">
         <input
           v-model="search"
           type="text"
           placeholder="Buscar sala..."
-          class="flex-1 px-4 py-2 bg-transparent border-b focus:outline-none transition-colors"
+          class="w-full sm:flex-1 px-4 py-3 bg-transparent border-b focus:outline-none transition-colors"
           style="border-color: var(--border); color: var(--text-primary); border-radius: 0;"
           @focus="$event.target.style.borderColor = 'var(--cyan)'"
           @blur="$event.target.style.borderColor = 'var(--border)'"
         />
         <select
           v-model="typeFilter"
-          class="px-4 py-2 border-b focus:outline-none"
+          class="w-full sm:w-auto px-4 py-3 border-b focus:outline-none"
           style="background: var(--bg-card); border-color: var(--border); color: var(--text-primary); border-radius: 0;"
         >
           <option value="">Todos los tipos</option>
