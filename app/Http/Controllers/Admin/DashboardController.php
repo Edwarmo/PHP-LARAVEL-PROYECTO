@@ -37,7 +37,7 @@ final class DashboardController extends Controller
                                     $today->copy()->endOfWeek(),
                                 ])
                                 ->count(),
-            'total_salas_activas' => Space::where('is_active', true)->count(),
+            'total_salas_activas' => Space::where('is_active', 'true')->count(),
         ];
 
         // ── Próximas reservas confirmadas (siguiente 48 h) ────────
