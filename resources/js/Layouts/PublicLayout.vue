@@ -79,6 +79,39 @@ onMounted(() => {
             >
               historial
             </Link>
+
+            <!-- Auth Links -->
+            <template v-if="!$page.props.auth?.user">
+              <Link
+                href="/login"
+                class="font-mono text-xs font-light lowercase tracking-wide transition-colors flex items-center h-11 text-[#5a7080] hover:text-[#f0f4f8]"
+              >
+                login
+              </Link>
+              <Link
+                href="/register"
+                class="font-mono text-xs font-light lowercase tracking-wide transition-colors flex items-center h-11 px-4 border border-[#00dcff] text-[#00dcff] hover:bg-[#00dcff]/10"
+              >
+                registro
+              </Link>
+            </template>
+            <template v-else>
+              <Link
+                v-if="$page.props.auth.user.email === 'admin@videoconfreservas.com'"
+                href="/admin"
+                class="font-mono text-xs font-light lowercase tracking-wide transition-colors flex items-center h-11 text-[#c8ff00] hover:opacity-80"
+              >
+                admin
+              </Link>
+              <Link
+                href="/logout"
+                method="post"
+                as="button"
+                class="font-mono text-xs font-light lowercase tracking-wide transition-colors flex items-center h-11 text-[#5a7080] hover:text-[#f0f4f8]"
+              >
+                salir ({{ $page.props.auth.user.name.split(' ')[0] }})
+              </Link>
+            </template>
           </nav>
         </div>
 
@@ -87,23 +120,32 @@ onMounted(() => {
           v-show="isMobileMenuOpen" 
           class="md:hidden absolute top-full left-0 w-full bg-[#0c1018] border-b border-[rgba(0,220,255,0.12)] shadow-xl"
         >
-          <nav class="flex flex-col px-6 py-4">
+          <nav class="flex flex-col px-6 py-4 space-y-2">
             <Link
               href="/"
               @click="isMobileMenuOpen = false"
               class="font-mono text-sm font-light lowercase tracking-wide transition-colors flex items-center h-12 w-full border-b border-[rgba(255,255,255,0.05)]"
-              :class="$page.url === '/' ? 'text-[#f0f4f8]' : 'text-[#5a7080] hover:text-[#f0f4f8]'"
+              :class="$page.url === '/' ? 'text-[#f0f4f8]' : 'text-[#5a7080]'"
             >
               salas
             </Link>
             <Link
               href="/historial"
               @click="isMobileMenuOpen = false"
-              class="font-mono text-sm font-light lowercase tracking-wide transition-colors flex items-center h-12 w-full"
-              :class="$page.url === '/historial' ? 'text-[#f0f4f8]' : 'text-[#5a7080] hover:text-[#f0f4f8]'"
+              class="font-mono text-sm font-light lowercase tracking-wide transition-colors flex items-center h-12 w-full border-b border-[rgba(255,255,255,0.05)]"
+              :class="$page.url === '/historial' ? 'text-[#f0f4f8]' : 'text-[#5a7080]'"
             >
               historial
             </Link>
+            
+            <template v-if="!$page.props.auth?.user">
+              <Link href="/login" @click="isMobileMenuOpen = false" class="font-mono text-sm lowercase text-[#5a7080] py-2">login</Link>
+              <Link href="/register" @click="isMobileMenuOpen = false" class="font-mono text-sm lowercase text-[#00dcff] py-2">registro</Link>
+            </template>
+            <template v-else>
+              <Link v-if="$page.props.auth.user.email === 'admin@videoconfreservas.com'" href="/admin" @click="isMobileMenuOpen = false" class="font-mono text-sm lowercase text-[#c8ff00] py-2">admin</Link>
+              <Link href="/logout" method="post" as="button" @click="isMobileMenuOpen = false" class="font-mono text-sm lowercase text-[#5a7080] py-2 text-left">salir</Link>
+            </template>
           </nav>
         </div>
       </header>

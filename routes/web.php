@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Admin;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\SpaceController;
 use Illuminate\Support\Facades\Route;
@@ -14,20 +16,35 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', [SpaceController::class, 'index'])->name('spaces.index');
-
 Route::get('/health', fn() => response()->json(['status' => 'ok']));
-
 Route::get('/spaces/{space:slug}', [SpaceController::class, 'show'])->name('spaces.show');
-
-Route::get('/reservations/new', [ReservationController::class, 'create'])->name('reservations.create');
-
 Route::get('/historial', [ReservationController::class, 'history'])->name('reservations.history');
 
-Route::post('/reservations', [ReservationController::class, 'store'])
-    ->middleware('throttle:reservations')
-    ->name('reservations.store');
+/*
+|--------------------------------------------------------------------------
+| Autenticación Manual
+|--------------------------------------------------------------------------
+*/
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [LoginController::class, 'show'])->name('login');
+    Route::post('/login', [LoginController::class, 'store']);
+    Route::get('/register', [RegisterController::class, 'show'])->name('register');
+    Route::post('/register', [RegisterController::class, 'store']);
+});
+Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 
-Route::get('/reservations/{slug}', [ReservationController::class, 'show'])->name('reservations.show');
+/*
+|--------------------------------------------------------------------------
+| Rutas de Reservas — Protegidas
+|--------------------------------------------------------------------------
+*/
+Route::middleware('auth')->group(function () {
+    Route::get('/reservations/new', [ReservationController::class, 'create'])->name('reservations.create');
+    Route::post('/reservations', [ReservationController::class, 'store'])
+        ->middleware('throttle:reservations')
+        ->name('reservations.store');
+    Route::get('/reservations/{slug}', [ReservationController::class, 'show'])->name('reservations.show');
+});
 
 /*
 |--------------------------------------------------------------------------
