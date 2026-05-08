@@ -36,7 +36,7 @@ final class ReservationController extends Controller
             'space_id'   => ['required', 'integer', 'exists:spaces,id'],
             'user_name'  => ['required', 'string', 'max:255'],
             'user_email' => ['required', 'email', 'max:255'],
-            'start_time' => ['required', 'date', 'after:now'],
+            'start_time' => ['required', 'date'],
             'duration'   => ['required', 'integer', 'min:30', 'max:480'],
             'notes'      => ['nullable', 'string', 'max:1000'],
         ]);
