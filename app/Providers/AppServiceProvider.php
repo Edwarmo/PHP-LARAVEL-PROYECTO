@@ -35,8 +35,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Forzar HTTPS en producción (Render.com usa proxy reverso)
-        if ($this->app->environment('production')) {
+        // Forzar HTTPS solo en producción real (no en localhost)
+        if ($this->app->environment('production') && !in_array(request()->getHost(), ['localhost', '127.0.0.1'])) {
             URL::forceScheme('https');
         }
 

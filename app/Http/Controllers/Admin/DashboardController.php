@@ -7,76 +7,46 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Reservation;
 use App\Models\Space;
-use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * Admin\DashboardController
+ * DashboardController
  *
- * Métricas generales del sistema de reservas.
- * Ruta: GET /admin  (middleware: auth, verified)
+ * Panel principal de administración con métricas y resumen.
  */
 final class DashboardController extends Controller
 {
-    public function __invoke(): Response
+    /**
+     * Muestra el resumen administrativo.
+     */
+    public function __invoke(Request $request): Response
     {
-        $now   = Carbon::now();
-        $today = Carbon::today();
-
-        // ── Métricas de reservas ──────────────────────────────────
         $metrics = [
-            'pendientes'  => Reservation::where('status', Reservation::STATUS_PENDIENTE)->count(),
-            'confirmadas' => Reservation::where('status', Reservation::STATUS_CONFIRMADA)->count(),
-            'hoy'         => Reservation::where('status', Reservation::STATUS_CONFIRMADA)
-                                ->whereDate('start_time', $today)
-                                ->count(),
-            'esta_semana' => Reservation::where('status', Reservation::STATUS_CONFIRMADA)
-                                ->whereBetween('start_time', [
-                                    $today->startOfWeek(),
-                                    $today->copy()->endOfWeek(),
-                                ])
-                                ->count(),
-            'total_salas_activas' => Space::where('is_active', 'true')->count(),
+            'pendientes'  => Reservation::pendiente()->count(),
+            'confirmadas' => Reservation::confirmada()->count(),
+            'hoy'         => Reservation::whereDate('start_time', today())->count(),
+            'esta_semana' => Reservation::whereBetween('start_time', [now()->startOfWeek(), now()->endOfWeek()])->count(),
         ];
 
-        // ── Próximas reservas confirmadas (siguiente 48 h) ────────
-        $proximasReservas = Reservation::with('space')
-            ->where('status', Reservation::STATUS_CONFIRMADA)
-            ->where('start_time', '>=', $now)
-            ->where('start_time', '<=', $now->copy()->addHours(48))
+        $pendientes = Reservation::with('space')
+            ->pendiente()
             ->orderBy('start_time')
             ->limit(10)
             ->get()
-            ->map(fn (Reservation $r) => [
+            ->map(fn ($r) => [
                 'slug'       => $r->slug,
                 'user_name'  => $r->user_name,
                 'space_name' => $r->space->name,
                 'start_time' => $r->start_time->toIso8601String(),
-                'end_time'   => $r->end_time->toIso8601String(),
                 'status'     => $r->status,
             ]);
 
-        // ── Reservas pendientes de acción ─────────────────────────
-        $pendientes = Reservation::with('space')
-            ->where('status', Reservation::STATUS_PENDIENTE)
-            ->orderBy('created_at', 'desc')
-            ->limit(10)
-            ->get()
-            ->map(fn (Reservation $r) => [
-                'slug'       => $r->slug,
-                'user_name'  => $r->user_name,
-                'user_email' => $r->user_email,
-                'space_name' => $r->space->name,
-                'start_time' => $r->start_time->toIso8601String(),
-                'end_time'   => $r->end_time->toIso8601String(),
-                'created_at' => $r->created_at->toIso8601String(),
-            ]);
-
-        return Inertia::render('Admin/Dashboard', [
+        return Inertia::render('AdminDashboard', [
             'metrics'          => $metrics,
-            'proximasReservas' => $proximasReservas,
             'pendientes'       => $pendientes,
+            'proximasReservas' => [],
         ]);
     }
 }

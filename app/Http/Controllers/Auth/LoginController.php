@@ -25,7 +25,9 @@ class LoginController extends Controller
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
 
-            // Redirección lógica: Admin -> Dashboard, Cliente -> Intended (Reserva)
+            // Redirección por Roles:
+            // Admin -> Dashboard Administrativo
+            // Cliente -> Listado de Salas (Raíz '/')
             if (Auth::user()->email === 'admin@videoconfreservas.com') {
                 return redirect()->intended('/admin');
             }

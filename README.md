@@ -70,6 +70,11 @@ npm run build
 ```bash
 php artisan serve
 ```
+11. Usuario administrador:
+```bash
+Email: admin@videoconfreservas.com
+Password: password
+```
 Acceder a: http://localhost:8000
 
 ## Instalacion con Docker

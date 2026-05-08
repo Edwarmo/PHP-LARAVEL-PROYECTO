@@ -73,7 +73,7 @@ final class CalendarController extends Controller
             'label' => $weekStart->addDays($i)->translatedFormat('D d/m'),
         ]);
 
-        return Inertia::render('Admin/Calendar', [
+        return Inertia::render('AdminCalendar', [
             'reservations'     => $reservations,
             'spaces'           => $spaces,
             'weekDays'         => $weekDays,

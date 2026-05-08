@@ -63,8 +63,8 @@ onMounted(() => {
             </svg>
           </button>
 
-          <!-- Desktop Nav Links -->
-          <nav class="hidden md:flex items-center gap-8">
+          <!-- Nav Links (Solo Autenticados) -->
+          <nav v-if="$page.props.auth?.user" class="hidden md:flex items-center gap-8">
             <Link
               href="/"
               class="font-mono text-xs font-light lowercase tracking-wide transition-colors flex items-center h-11"
@@ -80,44 +80,28 @@ onMounted(() => {
               historial
             </Link>
 
-            <!-- Auth Links -->
-            <template v-if="!$page.props.auth?.user">
-              <Link
-                href="/login"
-                class="font-mono text-xs font-light lowercase tracking-wide transition-colors flex items-center h-11 text-[#5a7080] hover:text-[#f0f4f8]"
-              >
-                login
-              </Link>
-              <Link
-                href="/register"
-                class="font-mono text-xs font-light lowercase tracking-wide transition-colors flex items-center h-11 px-4 border border-[#00dcff] text-[#00dcff] hover:bg-[#00dcff]/10"
-              >
-                registro
-              </Link>
-            </template>
-            <template v-else>
-              <Link
-                v-if="$page.props.auth.user.email === 'admin@videoconfreservas.com'"
-                href="/admin"
-                class="font-mono text-xs font-light lowercase tracking-wide transition-colors flex items-center h-11 text-[#c8ff00] hover:opacity-80"
-              >
-                admin
-              </Link>
-              <Link
-                href="/logout"
-                method="post"
-                as="button"
-                class="font-mono text-xs font-light lowercase tracking-wide transition-colors flex items-center h-11 text-[#5a7080] hover:text-[#f0f4f8]"
-              >
-                salir ({{ $page.props.auth.user.name.split(' ')[0] }})
-              </Link>
-            </template>
+            <Link
+              v-if="$page.props.auth.user?.email === 'admin@videoconfreservas.com'"
+              href="/admin"
+              class="font-mono text-xs font-light lowercase tracking-wide transition-colors flex items-center h-11 text-[#c8ff00] hover:opacity-80"
+            >
+              admin
+            </Link>
+
+            <Link
+              href="/logout"
+              method="post"
+              as="button"
+              class="font-mono text-xs font-light lowercase tracking-wide transition-colors flex items-center h-11 text-[#5a7080] hover:text-[#f0f4f8]"
+            >
+              salir ({{ $page.props.auth.user?.name?.split(' ')[0] }})
+            </Link>
           </nav>
         </div>
 
         <!-- Mobile Dropdown Menu -->
         <div 
-          v-show="isMobileMenuOpen" 
+          v-if="isMobileMenuOpen && $page.props.auth?.user" 
           class="md:hidden absolute top-full left-0 w-full bg-[#0c1018] border-b border-[rgba(0,220,255,0.12)] shadow-xl"
         >
           <nav class="flex flex-col px-6 py-4 space-y-2">
@@ -138,14 +122,8 @@ onMounted(() => {
               historial
             </Link>
             
-            <template v-if="!$page.props.auth?.user">
-              <Link href="/login" @click="isMobileMenuOpen = false" class="font-mono text-sm lowercase text-[#5a7080] py-2">login</Link>
-              <Link href="/register" @click="isMobileMenuOpen = false" class="font-mono text-sm lowercase text-[#00dcff] py-2">registro</Link>
-            </template>
-            <template v-else>
-              <Link v-if="$page.props.auth.user.email === 'admin@videoconfreservas.com'" href="/admin" @click="isMobileMenuOpen = false" class="font-mono text-sm lowercase text-[#c8ff00] py-2">admin</Link>
-              <Link href="/logout" method="post" as="button" @click="isMobileMenuOpen = false" class="font-mono text-sm lowercase text-[#5a7080] py-2 text-left">salir</Link>
-            </template>
+            <Link v-if="$page.props.auth.user?.email === 'admin@videoconfreservas.com'" href="/admin" @click="isMobileMenuOpen = false" class="font-mono text-sm lowercase text-[#c8ff00] py-2">admin</Link>
+            <Link href="/logout" method="post" as="button" @click="isMobileMenuOpen = false" class="font-mono text-sm lowercase text-[#5a7080] py-2 text-left">salir</Link>
           </nav>
         </div>
       </header>

@@ -24,5 +24,8 @@ php artisan view:clear
 # Ejecutar migraciones en producción
 php artisan migrate --force
 
+# Iniciar el servidor SSR de Inertia en segundo plano
+php artisan inertia:start-ssr &
+
 # Iniciar el servidor (Apache en foreground)
 exec apache2-foreground

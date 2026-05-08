@@ -86,7 +86,8 @@ final class ReservationController extends Controller
 
     public function history(Request $request): Response
     {
-        $email = $request->query('email');
+        // Si no hay búsqueda, usamos el email del usuario logueado por defecto
+        $email = $request->query('email', auth()->user()?->email);
         $reservations = [];
 
         if ($email) {

@@ -50,16 +50,18 @@ function formatTime(iso) {
 }
 
 onMounted(() => {
-  Object.keys(props.metrics).forEach((key) => {
-    if (animatedMetrics.value.hasOwnProperty(key)) {
-      gsap.to(animatedMetrics.value, {
-        [key]: props.metrics[key],
-        duration: 1.5,
-        ease: 'power2.out',
-        snap: { [key]: 1 },
-      })
-    }
-  })
+  if (props.metrics) {
+    Object.keys(props.metrics).forEach((key) => {
+      if (animatedMetrics.value.hasOwnProperty(key)) {
+        gsap.to(animatedMetrics.value, {
+          [key]: Number(props.metrics[key]) || 0,
+          duration: 1.5,
+          ease: 'power2.out',
+          snap: { [key]: 1 },
+        })
+      }
+    })
+  }
 })
 </script>
 
@@ -127,7 +129,7 @@ onMounted(() => {
             </div>
             <div class="flex justify-between md:block items-center">
               <span class="md:hidden font-mono text-xs" style="color: var(--text-dim);">Estado:</span>
-              <StatusBadge status="pendiente" />
+              <StatusBadge :status="reserva.status" />
             </div>
             <div class="flex gap-2 mt-2 md:mt-0 justify-end md:justify-start">
               <Link
