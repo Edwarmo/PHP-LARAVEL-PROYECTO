@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { Head, useForm, router } from '@inertiajs/vue3'
+import { Head, useForm, router, usePage } from '@inertiajs/vue3'
 import { gsap } from 'gsap'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
 
@@ -10,9 +10,12 @@ const props = defineProps({
   duration: { type: Number, default: 60 },
 })
 
+const page = usePage()
+const user = computed(() => page.props.auth?.user)
+
 const form = useForm({
-  user_name: '',
-  user_email: '',
+  user_name: user.value?.name || '',
+  user_email: user.value?.email || '',
   notes: '',
 })
 
@@ -128,8 +131,10 @@ onMounted(() => {
               <input
                 v-model="form.user_name"
                 type="text"
+                :readonly="user"
                 class="w-full bg-transparent border-b py-3 focus:outline-none transition-colors"
                 style="border-color: var(--border); color: var(--text-primary); font-family: 'DM Sans', sans-serif; border-radius: 0;"
+                :style="{ opacity: user ? 0.6 : 1 }"
                 @focus="$event.target.style.borderColor = 'var(--cyan)'"
                 @blur="$event.target.style.borderColor = 'var(--border)'"
               />
@@ -141,8 +146,10 @@ onMounted(() => {
               <input
                 v-model="form.user_email"
                 type="email"
+                :readonly="user"
                 class="w-full bg-transparent border-b py-3 focus:outline-none transition-colors"
                 style="border-color: var(--border); color: var(--text-primary); font-family: 'DM Sans', sans-serif; border-radius: 0;"
+                :style="{ opacity: user ? 0.6 : 1 }"
                 @focus="$event.target.style.borderColor = 'var(--cyan)'"
                 @blur="$event.target.style.borderColor = 'var(--border)'"
               />
