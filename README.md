@@ -1,258 +1,280 @@
 # Sistema de Reservas de Salas de Videoconferencia
 
-Sistema web profesional para la gestion y reserva de espacios de videoconferencia. Permite a los usuarios consultar disponibilidad en tiempo real, solicitar reservas y realizar un seguimiento de sus solicitudes por correo electronico. El area administrativa permite gestionar el calendario semanal, aprobar solicitudes y administrar el catalogo de salas.
+Sistema web profesional para la gestión y reserva de espacios de videoconferencia.  
+**Stack:** Laravel 11 · Vue 3 · Inertia.js · shadcn/ui · TailwindCSS v4 · Vite 8 · pnpm · Docker (nginx+fpm)
 
-## Requisitos del sistema
+---
 
-- PHP 8.3 o superior
-- Composer 2.x
-- Node.js 18 o superior
-- npm 9 o superior
-- PostgreSQL 14 o superior (o cuenta en Supabase)
-- Docker Desktop (para pruebas locales en contenedor)
-- Git
+## Stack técnico
 
-## Instalacion local (sin Docker)
+| Capa | Tecnología |
+|------|-----------|
+| Backend | Laravel 11 (PHP 8.3) |
+| Frontend | Vue 3 + Inertia.js SPA + SSR |
+| UI | shadcn/vue + TailwindCSS v4 + tw-animate-css |
+| Build | Vite 8 + pnpm 10 + code splitting |
+| BD | PostgreSQL 14+ (Supabase) |
+| Cache | Redis (Upstash) via middleware opcional |
+| Contenedor | Docker multi-stage (node:22 → php:8.3-fpm-alpine + nginx) |
 
-1. Clonar el repositorio:
+---
+
+## Requisitos
+
+- PHP 8.3+, Composer 2.x
+- Node.js 22+, pnpm 10+
+- PostgreSQL 14+ (o Supabase)
+- Docker (opcional)
+
+---
+
+## Instalación local
+
 ```bash
+# 1. Clonar
 git clone https://github.com/Edwarmo/PHP-LARAVEL-PROYECTO.git
 cd PHP-LARAVEL-PROYECTO
-```
 
-2. Crear archivo de entorno:
-```bash
+# 2. Entorno
 cp .env.example .env
-```
 
-3. Instalar dependencias de PHP:
-```bash
+# 3. PHP deps
 composer install
-```
 
-4. Generar clave de aplicacion:
-```bash
+# 4. App key
 php artisan key:generate
-```
 
-5. Configurar la base de datos en el archivo .env:
-```env
+# 5. Configurar DB en .env
 DB_CONNECTION=pgsql
 DB_HOST=aws-0-us-east-1.pooler.supabase.com
 DB_PORT=6543
 DB_DATABASE=postgres
-DB_USERNAME=tu_usuario
+DB_USERNAME=postgres.tu_proyecto
 DB_PASSWORD=tu_password
 DB_SSLMODE=require
-```
 
-6. Ejecutar migraciones:
-```bash
-php artisan migrate
-```
+# 6. Migraciones + seeders
+php artisan migrate --seed
 
-7. Poblar la base de datos:
-```bash
-php artisan db:seed
-```
+# 7. Frontend (pnpm)
+pnpm install
+pnpm run build
 
-8. Instalar dependencias de Node:
-```bash
-npm install
-```
-
-9. Compilar assets para produccion:
-```bash
-npm run build
-```
-
-10. Iniciar el servidor local:
-```bash
+# 8. Iniciar
 php artisan serve
+# → http://localhost:8000
 ```
-11. Usuario administrador:
-```bash
-Email: admin@videoconfreservas.com
-Password: password
-```
-Acceder a: http://localhost:8000
 
-## Instalacion con Docker
+---
 
-1. Construir la imagen:
+## Docker
+
+El proyecto usa **nginx + PHP-FPM** en Alpine (imagen final ~200MB).
+
+### Build + run
+
 ```bash
+# Build
 docker build -t videoconf .
-```
 
-2. Ejecutar el contenedor con las variables necesarias:
-```bash
+# Run
 docker run -p 8080:8080 \
-  -e APP_KEY=base64:tu_key_generada \
+  -e APP_KEY=base64:$(php artisan key:generate --show) \
   -e DB_CONNECTION=pgsql \
   -e DB_HOST=aws-0-us-east-1.pooler.supabase.com \
   -e DB_PORT=6543 \
   -e DB_DATABASE=postgres \
-  -e DB_USERNAME=tu_usuario \
+  -e DB_USERNAME=postgres.tu_proyecto \
   -e DB_PASSWORD=tu_password \
   -e DB_SSLMODE=require \
   -e SESSION_DRIVER=cookie \
-  -e CACHE_DRIVER=array \
   --name videoconf-app videoconf
 ```
 
-3. Verificar en: http://localhost:8080
+### Build rápido (con cache)
 
-## Configuracion de Supabase
-
-Para una conexion exitosa con Supabase, siga estas reglas obligatorias:
-
-- Utilice el host del Connection Pooler (Transaction Mode).
-- El puerto correcto es 6543 (no el puerto estandar 5432).
-- El formato del nombre de usuario debe ser postgres.ID_DE_PROYECTO.
-- La variable DB_SSLMODE=require es obligatoria para conexiones externas.
-
-Ejemplo de configuracion:
-```env
-DB_CONNECTION=pgsql
-DB_HOST=aws-0-us-east-1.pooler.supabase.com
-DB_PORT=6543
-DB_DATABASE=postgres
-DB_USERNAME=postgres.qsbeluygtxexjcrxwbme
-DB_PASSWORD=tu_password_segura
-DB_SSLMODE=require
+```bash
+pnpm run deploy:fast
 ```
 
-## Despliegue en Render.com
+### Pre-deploy checks
 
-1. Subir el codigo a un repositorio en GitHub.
-2. Crear un nuevo Web Service en Render.
-3. Conectar el repositorio de GitHub.
-4. Seleccionar el entorno Docker.
-5. Configurar las siguientes variables de entorno:
+```bash
+pnpm run pre-deploy
+# Valida: lockfile → build → lint → tests → secrets
+```
 
-| Variable | Valor sugerido |
-| :--- | :--- |
-| APP_NAME | Videoconferencia |
-| APP_ENV | production |
-| APP_KEY | base64:... (generado con php artisan key:generate) |
-| APP_DEBUG | false |
-| APP_URL | https://tu-app.onrender.com |
-| DB_CONNECTION | pgsql |
-| DB_HOST | aws-0-us-east-1.pooler.supabase.com |
-| DB_PORT | 6543 |
-| DB_DATABASE | postgres |
-| DB_USERNAME | postgres.ID_DE_PROYECTO |
-| DB_PASSWORD | tu_password_supabase |
-| DB_SSLMODE | require |
-| SESSION_DRIVER | cookie |
-| CACHE_DRIVER | array |
-| QUEUE_CONNECTION | sync |
-| LOG_CHANNEL | errorlog |
-| PORT | 8080 |
+---
 
-6. Desplegar y verificar en el endpoint: https://tu-app.onrender.com/health
+## Scripts disponibles
 
-## Variables de entorno
+| Comando | Descripción |
+|---------|-------------|
+| `pnpm dev` | Dev server Vite |
+| `pnpm build` | Build producción |
+| `pnpm test` | Tests Vitest |
+| `pnpm pre-deploy` | Validación completa pre-push |
+| `pnpm deploy` | Docker build desde cero |
+| `pnpm deploy:fast` | Docker build con cache |
 
-| Variable | Descripcion | Valor ejemplo |
-| :--- | :--- | :--- |
-| APP_NAME | Nombre de la aplicacion | Laravel |
-| APP_ENV | Entorno de ejecucion | local / production |
-| APP_KEY | Clave de encriptacion | base64:xxx |
-| APP_DEBUG | Modo de depuracion | true / false |
-| APP_URL | URL base de la aplicacion | http://localhost:8000 |
-| DB_CONNECTION | Driver de base de datos | pgsql |
-| DB_HOST | Host de la base de datos | 127.0.0.1 / pooler.supabase.com |
-| DB_PORT | Puerto de conexion | 6543 |
-| DB_DATABASE | Nombre de la base de datos | videoconf |
-| DB_USERNAME | Usuario de la base de datos | postgres.xxx |
-| DB_PASSWORD | Contrasena del usuario | xxxxxxx |
-| DB_SSLMODE | Modo SSL para Postgres | require |
-| SESSION_DRIVER | Driver de sesiones | cookie / file / database |
-| CACHE_DRIVER | Driver de cache | array / file |
-| PORT | Puerto para el servidor Apache | 8080 |
+---
 
 ## Estructura del proyecto
 
-- app/Http/Controllers/: Controladores de la logica de negocio.
-- app/Models/: Modelos Eloquent (Space, Reservation, User).
-- config/: Archivos de configuracion del framework.
-- database/migrations/: Definicion de la estructura de tablas.
-- database/seeders/: Datos iniciales y de prueba.
-- docker/: Configuraciones para el contenedor (Apache y script de inicio).
-- resources/js/Pages/: Vistas principales construidas con Vue 3.
-- resources/js/Components/: Componentes de UI reutilizables.
-- resources/js/Layouts/: Plantillas de estructura (Public y Admin).
-- routes/: Definicion de rutas web y API.
-- public/: Punto de entrada y assets compilados.
+```
+├── app/
+│   ├── Http/
+│   │   ├── Controllers/       # Lógica de negocio
+│   │   └── Middleware/
+│   │       ├── HandleInertiaRequests.php
+│   │       └── RedisCache.php # Cache inteligente por tags
+│   └── Models/                # Space, Reservation, User
+├── docker/
+│   ├── nginx.conf             # Config nginx + caché assets 365d
+│   ├── entrypoint.sh          # php-fpm + nginx + migrate
+│   └── start.sh               # (legacy)
+├── resources/
+│   ├── css/app.css            # Tailwind v4 + shadcn/ui vars
+│   └── js/
+│       ├── app.js             # Entry point Vue + Inertia
+│       ├── Components/
+│       │   └── ui/            # shadcn/vue components
+│       │       ├── Button.vue
+│       │       ├── Card.vue / CardHeader / CardTitle / etc.
+│       │       ├── Input.vue / Label.vue
+│       │       ├── Badge.vue
+│       │       ├── Dialog.vue / DialogContent / etc.
+│       │       ├── Skeleton.vue
+│       │       └── index.js   # Barrel exports
+│       ├── composables/
+│       │   └── useAnimate.js  # GSAP lazy + timeline
+│       ├── Layouts/
+│       │   └── PublicLayout.vue
+│       └── Pages/
+│           ├── Auth/          # Login, Register
+│           ├── Spaces/        # Index, Show
+│           ├── Reservations/  # Create, Show, History
+│           └── Admin/         # Dashboard, Calendar, CRUD
+├── Dockerfile                 # Multi-stage optimizado
+├── vite.config.js             # Code splitting + esbuild minify
+└── .git/hooks/pre-push        # Validación automática
+```
 
-## Rutas disponibles
+---
 
-### Rutas Publicas
-| Metodo | URL | Descripcion |
-| :--- | :--- | :--- |
-| GET | / | Listado de salas disponibles |
-| GET | /spaces/{slug} | Detalle de sala y slots de tiempo |
-| GET | /reservations/new | Formulario de creacion de reserva |
-| POST | /reservations | Enviar solicitud de reserva |
-| GET | /reservations/{slug} | Ver estado de una reserva especifica |
-| GET | /historial | Consultar historial por email |
-| GET | /health | Verificacion de estado del servicio |
+## Code Splitting (Vite 8)
 
-### Rutas Administrativas (requieren autenticacion)
-| Metodo | URL | Descripcion |
-| :--- | :--- | :--- |
-| GET | /admin | Dashboard con metricas generales |
-| GET | /admin/reservations | Listado gestionable de reservas |
-| GET | /admin/calendar | Vista de calendario de ocupacion |
-| GET | /admin/spaces | Gestion del catalogo de salas |
-| POST | /admin/reservations/{slug}/accept | Aprobar una reserva |
-| POST | /admin/reservations/{slug}/reject | Rechazar una reserva |
-| POST | /admin/reservations/{slug}/cancel | Cancelar una reserva confirmada |
+El build produce chunks separados para carga paralela:
 
-### Rutas API
-| Metodo | URL | Descripcion |
-| :--- | :--- | :--- |
-| GET | /api/spaces/{slug}/slots | Obtener slots libres para una fecha |
+| Chunk | Contenido | Tamaño | GZip |
+|-------|-----------|--------|------|
+| `vendor` | Vue 3 + Inertia.js | ~255 KB | ~90 KB |
+| `gsap` | GSAP animations | ~70 KB | ~27 KB |
+| `ui` | clsx + tailwind-merge | ~27 KB | ~8 KB |
+| `app` | Código de aplicación | ~26 KB | ~9 KB |
+| `PublicLayout` | Layout principal | ~16 KB | ~4 KB |
+| Páginas (c/u) | Login, Register, etc. | 2-6 KB | ~1-2 KB |
 
-## Credenciales por defecto
+---
 
-El seeder crea un administrador inicial:
-- Email: admin@videoconf.test
-- Password: password
+## Diseño UI (shadcn/vue + glassmorphism)
 
-Importante: cambie estas credenciales inmediatamente en entornos de produccion.
+- **Tema:** Dark mode por defecto con acentos cyan `#00dcff` y lima `#c8ff00`
+- **Glassmorphism:** `backdrop-blur-xl bg-background/80` en navbar, cards con borde sutil
+- **Animaciones:** GSAP (carga lazy, ~70KB solo cuando se necesita)
+- **Componentes:** shadcn/vue adaptados: Button, Card, Input, Badge, Dialog, Skeleton
+- **Tipografía:** JetBrains Mono (UI) + Cormorant Garamond (headings) + DM Sans (body)
+- **Responsive:** Mobile-first con menú hamburguesa
 
-## Comandos utiles
+---
 
-| Comando | Descripcion |
-| :--- | :--- |
-| php artisan migrate | Ejecuta las migraciones pendientes |
-| php artisan migrate:fresh --seed | Limpia la base de datos y carga datos iniciales |
-| php artisan db:seed | Ejecuta los seeders de la base de datos |
-| php artisan cache:clear | Limpia el cache de la aplicacion |
-| php artisan config:clear | Limpia el cache de configuracion |
-| php artisan test | Ejecuta las pruebas unitarias y funcionales |
-| npm run dev | Inicia el servidor de desarrollo de Vite |
-| npm run build | Compila los assets para produccion |
-| docker build -t videoconf . | Construye la imagen Docker local |
+## Cache con Redis (opcional)
 
-## Solucion de problemas comunes
+Middleware `RedisCache` disponible para cachear respuestas GET:
 
-| Error | Causa | Solucion |
-| :--- | :--- | :--- |
-| SQLSTATE[42883] boolean = integer | Incompatibilidad de tipos en Postgres | Asegurese de que los campos is_active se comparen con 'true' o 'false' como strings o booleanos reales, no con 0 o 1. |
-| SQLSTATE[08006] Network unreachable | Bloqueo de puerto 5432 o falta de IPv6 | Cambie el puerto a 6543 en la configuracion de Supabase. |
-| FATAL: Tenant or user not found | Nombre de usuario incorrecto | El usuario de Supabase debe incluir el prefijo postgres. seguido del ID de referencia del proyecto. |
-| No open ports detected en Render | Proceso Apache mal configurado | Verifique que start.sh termine con exec apache2-foreground para que Docker detecte el proceso correctamente. |
-| Address already in use | Conflicto de puertos en Apache | No ejecute comandos de inicio de Apache manuales antes del comando final en start.sh. |
-| Assets no cargan (404) | Falta compilacion de produccion | Ejecute npm run build antes de desplegar o construir la imagen Docker. |
+```php
+// En routes/web.php
+Route::middleware(['redis-cache:dashboard_stats,300'])->group(function () {
+    Route::get('/admin', [AdminController::class, 'dashboard']);
+});
+```
 
-## Licencia y autor
+Tags y TTLs predefinidos:
+| Tag | TTL | Uso |
+|-----|-----|-----|
+| `user_sessions` | 24h | Sesiones de usuario |
+| `menu_cache` | 1h | Navegación |
+| `recent_orders` | 30m | Reservas recientes |
+| `dashboard_stats` | 5m | Métricas admin |
 
-Licencia MIT
-Autor: Edwarmo - https://github.com/Edwarmo
+---
 
+## Rutas
 
+### Públicas
+| Método | URL | Descripción |
+|--------|-----|-------------|
+| GET | `/` | Listado de salas |
+| GET | `/spaces/{slug}` | Detalle + slots |
+| GET | `/reservations/new` | Formulario reserva |
+| POST | `/reservations` | Crear reserva |
+| GET | `/reservations/{slug}` | Estado reserva |
+| GET | `/historial` | Historial por email |
+| GET | `/health` | Health check |
 
+### Admin (requiere auth)
+| Método | URL | Descripción |
+|--------|-----|-------------|
+| GET | `/admin` | Dashboard |
+| GET | `/admin/reservations` | Gestionar reservas |
+| GET | `/admin/calendar` | Calendario |
+| GET | `/admin/spaces` | CRUD salas |
+| POST | `/admin/reservations/{slug}/accept` | Aprobar |
+| POST | `/admin/reservations/{slug}/reject` | Rechazar |
+| POST | `/admin/reservations/{slug}/cancel` | Cancelar |
 
+### API
+| Método | URL | Descripción |
+|--------|-----|-------------|
+| GET | `/api/spaces/{slug}/slots` | Slots libres |
+
+---
+
+## Credenciales default
+
+| Rol | Email | Password |
+|-----|-------|----------|
+| Admin | `admin@videoconfreservas.com` | `password` |
+
+---
+
+## Despliegue
+
+### Render.com
+
+1. Push a GitHub
+2. Render → New Web Service → Docker
+3. Variables de entorno (ver `.env.example`)
+4. Deploy 🚀
+
+### Cloudflare
+
+- Cache de assets estáticos (nginx ya envía `Cache-Control: public, immutable`)
+- Polish images (WebP/AVIF) vía Cloudflare
+
+---
+
+## Solución de problemas
+
+| Error | Causa | Solución |
+|-------|-------|----------|
+| `ERR_PNPM_IGNORED_BUILDS` | esbuild bloqueado por pnpm | `pnpm approve-builds esbuild` |
+| Assets 404 en producción | Falta `pnpm run build` | Ejecutar antes del deploy |
+| `No open ports detected` | Puerto incorrecto | Usar `PORT=8080` |
+| `SQLSTATE[08006]` | Puerto DB incorrecto | Usar 6543 (pooler Supabase) |
+
+---
+
+## Licencia
+
+MIT — [Edwarmo](https://github.com/Edwarmo)
