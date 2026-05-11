@@ -6,12 +6,19 @@
     "#app/*": "./resources/js/*"
   },
   "scripts": {
-    "build": "vite build",
     "dev": "vite",
+    "build": "vite build",
+    "build:prod": "vite build --mode production",
+    "preview": "vite preview",
+    "lint": "vue-tsc --noEmit",
+    "typecheck": "vue-tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "typecheck": "vue-tsc --noEmit"
+    "pre-deploy": "pnpm install --frozen-lockfile && pnpm run lint && pnpm run test && pnpm run build:prod",
+    "deploy": "docker build --no-cache -t laravel-app . && echo '✅ Build complete. Run: docker push <your-registry>/laravel-app:latest'",
+    "deploy:fast": "docker build --cache-from=laravel-app -t laravel-app . && echo '✅ Fast build complete'",
+    "postinstall": "pnpm approve-builds"
   },
   "dependencies": {
     "@inertiajs/vue3": "^2.0.0",

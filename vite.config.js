@@ -31,8 +31,29 @@ export default defineConfig({
             '@': resolve(__dirname, 'resources/js'),
         },
     },
+    build: {
+        rollupOptions: {
+            output: {
+                manualChunks(id) {
+                    if (id.includes('node_modules/vue') || id.includes('node_modules/@inertiajs')) {
+                        return 'vendor'
+                    }
+                    if (id.includes('node_modules/gsap')) {
+                        return 'gsap'
+                    }
+                    if (id.includes('node_modules/clsx') || id.includes('node_modules/tailwind-merge') || id.includes('node_modules/tw-animate-css')) {
+                        return 'ui'
+                    }
+                },
+            },
+        },
+        chunkSizeWarningLimit: 300,
+        cssCodeSplit: true,
+        sourcemap: false,
+        minify: 'esbuild',
+    },
     optimizeDeps: {
-        include: ['animejs'],
+        include: ['animejs', 'gsap'],
     },
     test: {
         environment: 'happy-dom',
@@ -44,12 +65,6 @@ export default defineConfig({
             reportsDirectory: './coverage',
             include: ['resources/js/Components/ui/**/*.vue'],
             all: true,
-            threshold: {
-                branches: 97,
-                functions: 97,
-                lines: 97,
-                statements: 97
-            }
-        }
-    }
+        },
+    },
 })

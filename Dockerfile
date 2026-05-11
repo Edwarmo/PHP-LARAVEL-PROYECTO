@@ -1,67 +1,63 @@
-# ── Stage 1: Node + Composer deps ───────────────────────────
-FROM php:8.3-cli-alpine AS node-build
+# syntax=docker/dockerfile:1
+# ==============================================================
+# STAGE 1: Node builder (pnpm + Vite)
+# ==============================================================
+FROM node:22-alpine AS node-builder
 WORKDIR /app
 
-# Install Node + npm + pnpm
-RUN apk add --no-cache nodejs npm && npm install -g pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
-# Composer
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
-
-# PHP deps (cache layer: only if composer.* changes)
-COPY composer.* ./
-RUN composer install --no-dev --no-scripts --no-interaction --ignore-platform-reqs
-
-# Node deps (cache layer: only if package.json/pnpm-lock changes)
 COPY package.json pnpm-lock.yaml ./
-RUN pnpm config set onlyBuiltDependencies "esbuild" && \
+RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
     pnpm install --frozen-lockfile
 
-# App source + build
 COPY . .
 RUN pnpm run build
 
-# ── Stage 2: PHP runtime with Apache ─────────────────────────
-FROM php:8.3-apache
+# ==============================================================
+# STAGE 2: PHP base (deps + extensions)
+# ==============================================================
+FROM php:8.3-fpm-alpine AS php-base
 
-# System deps + PHP extensions
-RUN apt-get update && apt-get install -y \
-    libpq-dev \
+ENV LD_LIBRARY_PATH="/usr/local/lib:${LD_LIBRARY_PATH}"
+
+RUN apk add --no-cache \
+    postgresql-dev \
     libpng-dev \
-    libonig-dev \
+    oniguruma-dev \
     libxml2-dev \
     zip unzip curl \
-    && docker-php-ext-install -j$(nproc) pdo pdo_pgsql mbstring exif pcntl bcmath gd \
-    && a2enmod rewrite
+    && docker-php-ext-install -j$(nproc) pdo_pgsql mbstring exif pcntl bcmath gd
 
-# Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
-
-# PHP deps (cache layer)
 COPY composer.* ./
 RUN composer install --no-dev --optimize-autoloader --no-scripts --no-interaction
 
-# App files
-COPY . .
+# ==============================================================
+# STAGE 3: Runtime (PHP-FPM + Nginx)
+# ==============================================================
+FROM php-base AS runtime
 
-# Built assets from stage 1
-COPY --from=node-build /app/public/build ./public/build
+# Nginx + process runner
+RUN apk add --no-cache nginx && \
+    mkdir -p /var/www/html/storage/framework/{sessions,views,cache/data} \
+             /var/www/html/bootstrap/cache \
+             /run/nginx && \
+    adduser -D -H -s /sbin/nologin www-data && \
+    chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && \
+    chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Storage structure + permissions
-RUN mkdir -p storage/framework/{sessions,views,cache/data} bootstrap/cache \
-    && chown -R www-data:www-data storage bootstrap/cache \
-    && chmod -R 775 storage bootstrap/cache
+COPY . /var/www/html
+COPY --from=node-builder /app/public/build /var/www/html/public/build
 
-# Apache config
-COPY docker/000-default.conf /etc/apache2/sites-available/000-default.conf
-RUN a2ensite 000-default
+# Nginx config
+COPY docker/nginx.conf /etc/nginx/http.d/default.conf
 
 # Entrypoint
-COPY docker/start.sh /usr/local/bin/entrypoint.sh
-RUN sed -i 's/\r//' /usr/local/bin/entrypoint.sh && chmod +x /usr/local/bin/entrypoint.sh
+COPY docker/entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
 EXPOSE 8080
-
 ENTRYPOINT ["entrypoint.sh"]
