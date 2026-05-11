@@ -2,21 +2,21 @@
 FROM php:8.3-cli-alpine AS node-build
 WORKDIR /app
 
-# Install Node + npm
-RUN apk add --no-cache nodejs npm
+# Install Node + npm + pnpm
+RUN apk add --no-cache nodejs npm && npm install -g pnpm
 
 # Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 # PHP deps
-COPY composer*.json ./
+COPY composer.* ./
 RUN composer install --no-dev --no-scripts --no-interaction --ignore-platform-reqs
 
 # Node deps + build
-COPY package*.json ./
-RUN npm ci
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
 COPY . .
-RUN npm run build
+RUN pnpm run build
 
 # ── Stage 2: PHP runtime with Apache ─────────────────────────────
 FROM php:8.3-apache
