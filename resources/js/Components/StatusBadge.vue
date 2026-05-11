@@ -1,4 +1,6 @@
 <script setup>
+import { Badge } from '@/Components/ui'
+
 const props = defineProps({
   status: {
     type: String,
@@ -8,39 +10,18 @@ const props = defineProps({
 })
 
 const statusConfig = {
-  pendiente: {
-    color: '#f0c040',
-    label: 'Pendiente'
-  },
-  confirmada: {
-    color: '#00dcff',
-    label: 'Confirmada'
-  },
-  rechazada: {
-    color: '#ff4060',
-    label: 'Rechazada'
-  },
-  cancelada: {
-    color: '#5a7080',
-    label: 'Cancelada'
-  },
-  finalizada: {
-    color: '#c8ff00',
-    label: 'Finalizada'
-  }
+  pendiente: { variant: 'secondary', label: 'Pendiente' },
+  confirmada: { variant: 'default', label: 'Confirmada' },
+  rechazada: { variant: 'destructive', label: 'Rechazada' },
+  cancelada: { variant: 'secondary', label: 'Cancelada' },
+  finalizada: { variant: 'secondary', label: 'Finalizada' }
 }
 
 const config = statusConfig[props.status]
 </script>
 
 <template>
-  <span
-    class="inline-block border bg-transparent font-mono text-xs uppercase px-2 py-0.5 tracking-wider"
-    :style="{
-      borderColor: config.color,
-      color: config.color
-    }"
-  >
+  <Badge :variant="config.variant">
     {{ config.label }}
-  </span>
+  </Badge>
 </template>

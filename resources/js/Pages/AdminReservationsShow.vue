@@ -1,7 +1,11 @@
 <script setup>
 import { Head, Link, useForm } from '@inertiajs/vue3'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
-import StatusBadge from '@/Components/StatusBadge.vue'
+import { Badge } from '@/Components/ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui'
+import { Button } from '@/Components/ui'
+import { Input } from '@/Components/ui'
+import { Label } from '@/Components/ui'
 
 const props = defineProps({
   reservation: Object,
@@ -33,80 +37,66 @@ function formatDate(iso) {
 <template>
   <Head :title="`Reserva - ${reservation.user_name}`" />
   <PublicLayout>
-    <div class="max-w-4xl mx-auto px-4 py-8">
+    <div class="mx-auto max-w-4xl px-4 py-8">
       <div class="mb-8 flex justify-between items-center">
         <div>
-          <Link href="/admin/reservations" class="text-xs font-mono text-dim hover:text-white transition-colors">← VOLVER AL LISTADO</Link>
-          <h1 class="text-3xl mt-2 font-light" style="font-family: 'Cormorant Garamond', serif; color: var(--text-primary);">
-            Detalle de Reserva
-          </h1>
+          <Link href="/admin/reservations" class="text-xs font-mono text-muted-foreground hover:text-foreground">← VOLVER AL LISTADO</Link>
+          <h1 class="mt-2 text-3xl font-light text-foreground">Detalle de Reserva</h1>
         </div>
-        <button 
-          @click="deleteReservation"
-          class="px-4 py-2 border border-red-500/50 text-red-500 text-xs uppercase tracking-widest hover:bg-red-500/10 transition-colors"
-        >
+        <Button variant="destructive" size="sm" @click="deleteReservation">
           Eliminar Reserva
-        </button>
+        </Button>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <!-- Sidebar: Info -->
         <div class="lg:col-span-1 space-y-6">
-          <div class="border p-6" style="background: var(--bg-card); border-color: var(--border); border-radius: 0;">
-            <div class="font-mono text-xs uppercase tracking-wide mb-4" style="color: var(--text-dim);">Información</div>
-            <div class="space-y-4">
+          <Card class="border border-cyan/20 bg-card/80">
+            <CardHeader>
+              <CardTitle>Información</CardTitle>
+            </CardHeader>
+            <CardContent class="space-y-4">
               <div>
-                <label class="font-mono text-[10px] uppercase text-dim block mb-1">Sala</label>
-                <div class="text-sm font-medium text-cyan">{{ reservation.space.name }}</div>
+                <Label class="text-muted-foreground">Sala</Label>
+                <div class="text-cyan">{{ reservation.space.name }}</div>
               </div>
               <div>
-                <label class="font-mono text-[10px] uppercase text-dim block mb-1">Inicio</label>
-                <div class="text-sm text-primary">{{ formatDate(reservation.start_time) }}</div>
+                <Label class="text-muted-foreground">Inicio</Label>
+                <div class="text-foreground">{{ formatDate(reservation.start_time) }}</div>
               </div>
               <div>
-                <label class="font-mono text-[10px] uppercase text-dim block mb-1">Fin</label>
-                <div class="text-sm text-primary">{{ formatDate(reservation.end_time) }}</div>
+                <Label class="text-muted-foreground">Fin</Label>
+                <div class="text-foreground">{{ formatDate(reservation.end_time) }}</div>
               </div>
               <div>
-                <label class="font-mono text-[10px] uppercase text-dim block mb-1">Solicitado el</label>
-                <div class="text-sm text-dim">{{ formatDate(reservation.created_at) }}</div>
+                <Label class="text-muted-foreground">Solicitado el</Label>
+                <div class="text-muted-foreground">{{ formatDate(reservation.created_at) }}</div>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
 
         <!-- Main: Edit Form -->
         <div class="lg:col-span-2">
-          <form @submit.prevent="updateReservation" class="border p-8 space-y-6" style="background: var(--bg-card); border-color: var(--border); border-radius: 0;">
-            <div class="font-mono text-xs uppercase tracking-wide mb-6" style="color: var(--text-dim);">Gestión de la Reserva</div>
+          <form @submit.prevent="updateReservation" class="space-y-6 border border-cyan/20 bg-card/80 p-8">
+            <div class="font-mono text-xs uppercase tracking-wide text-muted-foreground">Gestión de la Reserva</div>
             
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div>
-                <label class="font-mono text-xs uppercase tracking-wider mb-2 block" style="color: var(--text-dim);">Nombre del Usuario</label>
-                <input
-                  v-model="form.user_name"
-                  type="text"
-                  class="w-full bg-transparent border-b py-2 focus:outline-none focus:border-cyan transition-colors"
-                  style="border-color: var(--border); color: var(--text-primary); border-radius: 0;"
-                />
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+              <div class="space-y-2">
+                <Label>Nombre del Usuario</Label>
+                <Input v-model="form.user_name" />
               </div>
-              <div>
-                <label class="font-mono text-xs uppercase tracking-wider mb-2 block" style="color: var(--text-dim);">Email del Usuario</label>
-                <input
-                  v-model="form.user_email"
-                  type="email"
-                  class="w-full bg-transparent border-b py-2 focus:outline-none focus:border-cyan transition-colors"
-                  style="border-color: var(--border); color: var(--text-primary); border-radius: 0;"
-                />
+              <div class="space-y-2">
+                <Label>Email del Usuario</Label>
+                <Input v-model="form.user_email" type="email" />
               </div>
             </div>
 
-            <div>
-              <label class="font-mono text-xs uppercase tracking-wider mb-2 block" style="color: var(--text-dim);">Estado de la Reserva</label>
+            <div class="space-y-2">
+              <Label>Estado de la Reserva</Label>
               <select
                 v-model="form.status"
-                class="w-full bg-transparent border-b py-2 focus:outline-none focus:border-cyan transition-colors"
-                style="border-color: var(--border); color: var(--text-primary); border-radius: 0; appearance: none;"
+                class="w-full rounded-none border border-border bg-background py-2 px-3 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
               >
                 <option value="pendiente">Pendiente</option>
                 <option value="confirmada">Confirmada (Aceptada)</option>
@@ -115,32 +105,31 @@ function formatDate(iso) {
                 <option value="finalizada">Finalizada</option>
               </select>
               <div class="mt-2">
-                <StatusBadge :status="form.status" />
+                <Badge :variant="form.status === 'pendiente' ? 'secondary' : 'default'">
+                  {{ form.status }}
+                </Badge>
               </div>
             </div>
 
-            <div>
-              <label class="font-mono text-xs uppercase tracking-wider mb-2 block" style="color: var(--text-dim);">Notas Administrativas / Motivos</label>
+            <div class="space-y-2">
+              <Label>Notas Administrativas / Motivos</Label>
               <textarea
                 v-model="form.notes"
                 rows="4"
-                class="w-full bg-transparent border-b py-2 focus:outline-none focus:border-cyan transition-colors resize-none"
-                style="border-color: var(--border); color: var(--text-primary); border-radius: 0;"
+                class="w-full rounded-none border border-border bg-background py-2 px-3 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring resize-none"
                 placeholder="Escribe aquí notas sobre el cambio de estado o instrucciones adicionales..."
               ></textarea>
             </div>
 
             <div class="flex items-center justify-between pt-4">
               <span v-if="form.recentlySuccessful" class="text-xs font-mono text-lime">✓ CAMBIOS GUARDADOS</span>
-              <button
+              <Button
                 type="submit"
+                class="bg-cyan text-black hover:bg-cyan/90"
                 :disabled="form.processing"
-                class="px-8 py-3 font-medium uppercase tracking-widest transition-all"
-                style="background: var(--cyan); color: #000; border-radius: 0;"
-                :style="{ opacity: form.processing ? 0.6 : 1 }"
               >
                 {{ form.processing ? 'GUARDANDO...' : 'GUARDAR CAMBIOS' }}
-              </button>
+              </Button>
             </div>
           </form>
         </div>
@@ -148,13 +137,3 @@ function formatDate(iso) {
     </div>
   </PublicLayout>
 </template>
-
-<style scoped>
-select {
-  background-color: #0c1018 !important;
-}
-select option {
-  background: #0c1018;
-  color: white;
-}
-</style>

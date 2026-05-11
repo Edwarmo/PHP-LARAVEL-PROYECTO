@@ -29,3 +29,4 @@ php artisan inertia:start-ssr &
 
 # Iniciar el servidor (Apache en foreground)
 exec apache2-foreground
+

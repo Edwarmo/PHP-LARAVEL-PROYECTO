@@ -1,9 +1,11 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { Head, router } from '@inertiajs/vue3'
-import { gsap } from 'gsap'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
 import StatusBadge from '@/Components/StatusBadge.vue'
+import { Card, CardContent } from '@/Components/ui'
+import { Button } from '@/Components/ui'
+import { Badge } from '@/Components/ui'
 
 const props = defineProps({
   reservations: Array,
@@ -43,22 +45,8 @@ const reservationsByDay = computed(() => {
 })
 
 function navigateWeek(week) {
-  gsap.to('.calendar-grid', {
-    x: week === props.prevWeek ? 40 : -40,
-    opacity: 0,
-    duration: 0.4,
-    ease: 'power2.inOut',
-    onComplete: () => {
-      router.get(`/admin/calendar?week=${week}&space_id=${selectedSpace.value || ''}`, {}, {
-        preserveState: true,
-        onSuccess: () => {
-          gsap.fromTo('.calendar-grid',
-            { x: week === props.prevWeek ? -40 : 40, opacity: 0 },
-            { x: 0, opacity: 1, duration: 0.4, ease: 'power2.out' }
-          )
-        }
-      })
-    }
+  router.get(`/admin/calendar?week=${week}&space_id=${selectedSpace.value || ''}`, {}, {
+    preserveState: true
   })
 }
 
@@ -84,13 +72,12 @@ watch(selectedSpace, (val) => {
 <template>
   <Head title="Calendario Semanal" />
   <PublicLayout>
-    <div class="max-w-7xl mx-auto px-4 py-8">
+    <div class="mx-auto max-w-7xl px-4 py-8">
       <!-- Header -->
-      <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+      <div class="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <select
           v-model="selectedSpace"
-          class="w-full md:w-auto px-4 py-3 md:py-2 border bg-transparent focus:outline-none transition-colors"
-          style="border-color: var(--border); color: var(--text-primary); border-radius: 0; font-family: 'DM Sans', sans-serif;"
+          class="w-full border border-border bg-background px-4 py-3 text-sm md:w-auto md:py-2"
         >
           <option value="">Todos los espacios</option>
           <option v-for="space in spaces" :key="space.id" :value="space.id">
@@ -98,52 +85,31 @@ watch(selectedSpace, (val) => {
           </option>
         </select>
 
-        <div class="flex items-center justify-between md:justify-start gap-6">
-          <button
-            @click="navigateWeek(prevWeek)"
-            class="text-2xl transition-colors"
-            style="color: var(--text-muted); font-family: 'DM Sans', sans-serif;"
-            @mouseenter="$event.target.style.color = 'var(--cyan)'"
-            @mouseleave="$event.target.style.color = 'var(--text-muted)'"
-          >
-            ←
-          </button>
-          <h1 class="text-xl sm:text-2xl font-light text-center" style="font-family: 'Cormorant Garamond', serif; color: var(--text-primary);">
+        <div class="flex items-center justify-between gap-6 md:justify-start">
+          <Button variant="ghost" size="icon" @click="navigateWeek(prevWeek)">←</Button>
+          <h1 class="text-center text-xl font-light sm:text-2xl text-foreground">
             {{ weekTitle }}
           </h1>
-          <button
-            @click="navigateWeek(nextWeek)"
-            class="text-2xl transition-colors"
-            style="color: var(--text-muted); font-family: 'DM Sans', sans-serif;"
-            @mouseenter="$event.target.style.color = 'var(--cyan)'"
-            @mouseleave="$event.target.style.color = 'var(--text-muted)'"
-          >
-            →
-          </button>
+          <Button variant="ghost" size="icon" @click="navigateWeek(nextWeek)">→</Button>
         </div>
       </div>
 
       <!-- Calendar Grid -->
-      <div class="calendar-grid overflow-x-auto">
+      <div class="overflow-x-auto">
         <div class="min-w-[700px]">
           <!-- Day Headers -->
-          <div class="grid grid-cols-7 gap-2 mb-4">
+          <div class="mb-4 grid grid-cols-7 gap-2">
             <div
               v-for="(day, i) in weekDays"
               :key="i"
               class="text-center"
             >
-              <div class="font-mono text-xs uppercase" style="color: var(--text-dim);">
+              <div class="font-mono text-xs uppercase text-muted-foreground">
                 {{ day.label.split(' ')[0] }}
               </div>
               <div
-                class="text-xl font-light mt-1"
-                :class="{ 'border-b-2': day.date === today }"
-                :style="{
-                  fontFamily: 'Cormorant Garamond, serif',
-                  color: 'var(--text-primary)',
-                  borderColor: day.date === today ? 'var(--cyan)' : 'transparent'
-                }"
+                class="mt-1 text-xl font-light"
+                :class="{ 'border-b-2 border-cyan': day.date === today }"
               >
                 {{ day.label.split(' ')[1].split('/')[0] }}
               </div>
@@ -160,12 +126,9 @@ watch(selectedSpace, (val) => {
               <!-- Empty Slot -->
               <div
                 v-if="!dayReservations.length"
-                class="border p-3 text-center transition-colors cursor-pointer"
-                style="border-color: var(--border); background: transparent; border-radius: 0;"
-                @mouseenter="$event.target.style.borderColor = 'var(--cyan)'"
-                @mouseleave="$event.target.style.borderColor = 'var(--border)'"
+                class="cursor-pointer border border-border p-3 text-center transition-colors hover:border-cyan"
               >
-                <div class="font-mono text-xs" style="color: var(--cyan);">Disponible</div>
+                <Badge variant="outline" class="text-cyan">Disponible</Badge>
               </div>
 
               <!-- Reservations -->
@@ -173,17 +136,16 @@ watch(selectedSpace, (val) => {
                 v-for="reservation in dayReservations"
                 :key="reservation.slug"
                 @click="selectReservation(reservation)"
-                class="border p-3 cursor-pointer transition-colors"
-                :style="{
-                  background: reservation.status === 'pendiente' ? 'rgba(240,192,64,0.1)' : 'rgba(0,220,255,0.08)',
-                  borderColor: reservation.status === 'pendiente' ? '#eab308' : 'var(--cyan)',
-                  borderRadius: 0
+                class="cursor-pointer border p-3 transition-colors"
+                :class="{
+                  'border-yellow-500/50 bg-yellow-500/10': reservation.status === 'pendiente',
+                  'border-cyan/50 bg-cyan/10': reservation.status !== 'pendiente'
                 }"
               >
-                <div class="font-mono text-xs" style="color: var(--cyan);">
+                <div class="font-mono text-xs text-cyan">
                   {{ formatTime(reservation.start_time) }}
                 </div>
-                <div class="text-xs mt-1" style="font-family: 'DM Sans', sans-serif; color: var(--text-muted);">
+                <div class="mt-1 text-sm text-muted-foreground">
                   {{ reservation.user_name }}
                 </div>
                 <StatusBadge :status="reservation.status" class="mt-2" />
@@ -195,85 +157,79 @@ watch(selectedSpace, (val) => {
 
       <!-- Side Panel -->
       <Transition
-        @enter="gsap.fromTo($el, { x: 300, opacity: 0 }, { x: 0, opacity: 1, duration: 0.3 })"
-        @leave="gsap.to($el, { x: 300, opacity: 0, duration: 0.3 })"
+        enter-from-class="translate-x-full opacity-0"
+        enter-active-class="transition-all duration-300"
+        leave-to-class="translate-x-full opacity-0"
+        leave-active-class="transition-all duration-300"
       >
-        <div
+        <Card
           v-if="showPanel && selectedReservation"
-          class="fixed right-0 top-0 h-full w-full sm:w-96 border-l p-6 overflow-y-auto z-[60]"
-          style="background: var(--bg-base); border-color: var(--border);"
+          class="fixed inset-y-0 right-0 z-50 w-full border-l sm:w-96"
         >
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
+            class="absolute top-4 right-4"
             @click="closePanel"
-            class="absolute top-4 right-4 text-2xl"
-            style="color: var(--text-muted);"
           >
             ×
-          </button>
+          </Button>
 
-          <div class="font-mono text-xs uppercase tracking-wide mb-4" style="color: var(--text-dim);">
-            Detalle de reserva
-          </div>
+          <div class="p-6">
+            <div class="mb-4 font-mono text-xs uppercase tracking-wide text-muted-foreground">
+              Detalle de reserva
+            </div>
 
-          <div class="space-y-4">
-            <div>
-              <div class="font-mono text-xs uppercase mb-1" style="color: var(--text-dim);">Espacio</div>
-              <div style="color: var(--cyan); font-family: 'DM Sans', sans-serif;">
-                {{ selectedReservation.space_name }}
+            <div class="space-y-4">
+              <div>
+                <div class="mb-1 font-mono text-xs text-muted-foreground">Espacio</div>
+                <div class="text-cyan">{{ selectedReservation.space_name }}</div>
+              </div>
+
+              <div>
+                <div class="mb-1 font-mono text-xs text-muted-foreground">Usuario</div>
+                <div class="text-foreground">{{ selectedReservation.user_name }}</div>
+              </div>
+
+              <div>
+                <div class="mb-1 font-mono text-xs text-muted-foreground">Horario</div>
+                <div class="font-mono text-sm text-lime">
+                  {{ formatTime(selectedReservation.start_time) }} — {{ formatTime(selectedReservation.end_time) }}
+                </div>
+              </div>
+
+              <div>
+                <div class="mb-1 font-mono text-xs text-muted-foreground">Estado</div>
+                <StatusBadge :status="selectedReservation.status" />
               </div>
             </div>
 
-            <div>
-              <div class="font-mono text-xs uppercase mb-1" style="color: var(--text-dim);">Usuario</div>
-              <div style="color: var(--text-primary); font-family: 'DM Sans', sans-serif;">
-                {{ selectedReservation.user_name }}
-              </div>
-            </div>
-
-            <div>
-              <div class="font-mono text-xs uppercase mb-1" style="color: var(--text-dim);">Horario</div>
-              <div class="font-mono text-sm" style="color: var(--lime);">
-                {{ formatTime(selectedReservation.start_time) }} — {{ formatTime(selectedReservation.end_time) }}
-              </div>
-            </div>
-
-            <div>
-              <div class="font-mono text-xs uppercase mb-1" style="color: var(--text-dim);">Estado</div>
-              <StatusBadge :status="selectedReservation.status" />
+            <!-- Actions -->
+            <div class="mt-8 space-y-2">
+              <Button
+                v-if="selectedReservation.status === 'pendiente'"
+                variant="outline"
+                class="w-full border-cyan text-cyan hover:bg-cyan/10"
+              >
+                Aceptar
+              </Button>
+              <Button
+                v-if="selectedReservation.status === 'pendiente'"
+                variant="outline"
+                class="w-full border-destructive text-destructive hover:bg-destructive/10"
+              >
+                Rechazar
+              </Button>
+              <Button
+                v-if="selectedReservation.status === 'confirmada'"
+                variant="outline"
+                class="w-full"
+              >
+                Cancelar
+              </Button>
             </div>
           </div>
-
-          <!-- Actions -->
-          <div class="mt-8 space-y-2">
-            <button
-              v-if="selectedReservation.status === 'pendiente'"
-              class="w-full py-2 border text-xs uppercase transition-colors"
-              style="border-color: var(--cyan); color: var(--cyan); background: transparent; border-radius: 0;"
-              @mouseenter="$event.target.style.background = 'rgba(0,220,255,0.1)'"
-              @mouseleave="$event.target.style.background = 'transparent'"
-            >
-              Aceptar
-            </button>
-            <button
-              v-if="selectedReservation.status === 'pendiente'"
-              class="w-full py-2 border text-xs uppercase transition-colors"
-              style="border-color: #ef4444; color: #ef4444; background: transparent; border-radius: 0;"
-              @mouseenter="$event.target.style.background = 'rgba(239,68,68,0.1)'"
-              @mouseleave="$event.target.style.background = 'transparent'"
-            >
-              Rechazar
-            </button>
-            <button
-              v-if="selectedReservation.status === 'confirmada'"
-              class="w-full py-2 border text-xs uppercase transition-colors"
-              style="border-color: var(--text-muted); color: var(--text-muted); background: transparent; border-radius: 0;"
-              @mouseenter="$event.target.style.background = 'rgba(90,112,128,0.1)'"
-              @mouseleave="$event.target.style.background = 'transparent'"
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
+        </Card>
       </Transition>
     </div>
   </PublicLayout>

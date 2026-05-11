@@ -1,9 +1,11 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { Head, router } from '@inertiajs/vue3'
-import gsap from 'gsap'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
-import StatusBadge from '@/Components/StatusBadge.vue'
+import { Badge } from '@/Components/ui'
+import { Card, CardContent } from '@/Components/ui'
+import { Button } from '@/Components/ui'
+import { Input } from '@/Components/ui'
 
 const props = defineProps({
   reservations: { type: Array, default: () => [] },
@@ -26,59 +28,39 @@ function formatTime(iso) {
   const d = new Date(iso)
   return d.toTimeString().slice(0, 5)
 }
-
-onMounted(() => {
-  setTimeout(() => {
-    const items = document.querySelectorAll('.history-item')
-    if (items.length > 0) {
-      gsap.from(items, { y: 20, opacity: 0, stagger: 0.08, duration: 0.6, ease: 'power3.out' })
-    }
-  }, 50)
-})
 </script>
 
 <template>
   <Head title="Historial de Reservas" />
   <PublicLayout>
-    <div class="max-w-4xl mx-auto px-4 py-12">
+    <div class="mx-auto max-w-4xl px-4 py-12">
       <!-- Header -->
       <div class="mb-8">
-        <h1 class="text-3xl md:text-5xl lg:text-7xl font-light mb-2 break-words" style="font-family: 'Cormorant Garamond', serif; color: var(--text-primary);">
-          Historial de Reservas
-        </h1>
-        <p class="text-sm" style="font-family: 'DM Sans', sans-serif; color: var(--text-muted);">
+        <h1 class="text-7xl font-light break-words text-foreground">Historial de Reservas</h1>
+        <p class="text-sm text-muted-foreground">
           Consulta tus reservas ingresando tu correo electrónico
         </p>
       </div>
 
       <!-- Search Form -->
       <div class="mb-8">
-        <form @submit.prevent="search" class="flex flex-col sm:flex-row gap-4">
-          <input
+        <form @submit.prevent="search" class="flex flex-col gap-4 sm:flex-row">
+          <Input
             v-model="searchEmail"
             type="email"
             placeholder="tu@email.com"
             required
-            class="w-full sm:flex-1 px-4 py-3 bg-transparent border-b focus:outline-none transition-colors"
-            style="border-color: var(--border); color: var(--text-primary); font-family: 'DM Sans', sans-serif; border-radius: 0;"
-            @focus="$event.target.style.borderColor = 'var(--cyan)'"
-            @blur="$event.target.style.borderColor = 'var(--border)'"
+            class="flex-1"
           />
-          <button
-            type="submit"
-            class="w-full sm:w-auto px-6 py-3 border text-xs uppercase font-medium tracking-wider transition-colors"
-            style="border-color: var(--cyan); color: var(--cyan); background: transparent; border-radius: 0;"
-            @mouseenter="$event.target.style.background = 'var(--cyan)'; $event.target.style.color = '#000'"
-            @mouseleave="$event.target.style.background = 'transparent'; $event.target.style.color = 'var(--cyan)'"
-          >
+          <Button type="submit" class="w-full sm:w-auto border border-cyan text-cyan hover:bg-cyan hover:text-black">
             Buscar
-          </button>
+          </Button>
         </form>
       </div>
 
       <!-- Results -->
       <div v-if="email && reservations.length > 0" class="space-y-3">
-        <div class="font-mono text-xs uppercase tracking-wide mb-4" style="color: var(--text-dim);">
+        <div class="mb-4 font-mono text-xs uppercase tracking-wide text-muted-foreground">
           {{ reservations.length }} reserva{{ reservations.length !== 1 ? 's' : '' }} encontrada{{ reservations.length !== 1 ? 's' : '' }}
         </div>
 
@@ -86,49 +68,44 @@ onMounted(() => {
           v-for="reservation in reservations"
           :key="reservation.slug"
           :href="`/reservations/${reservation.slug}`"
-          class="history-item block border p-6 transition-colors"
-          style="background: var(--bg-base); border-color: var(--border); border-radius: 0;"
-          @mouseenter="$event.currentTarget.style.background = 'var(--bg-card)'"
-          @mouseleave="$event.currentTarget.style.background = 'var(--bg-base)'"
+          class="block border border-cyan/20 bg-card/50 p-6 transition-colors hover:bg-card/80"
         >
-          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-4">
+          <div class="flex flex-col items-start justify-between gap-4 sm:flex-row">
             <div class="flex-1">
-              <h3 class="text-xl font-light mb-1" style="font-family: 'Cormorant Garamond', serif; color: var(--text-primary);">
+              <h3 class="mb-1 text-xl font-light text-foreground">
                 {{ reservation.space_name }}
               </h3>
-              <p class="text-sm" style="font-family: 'DM Sans', sans-serif; color: var(--text-muted);">
+              <p class="text-sm text-muted-foreground">
                 {{ reservation.user_name }}
               </p>
             </div>
-            <StatusBadge :status="reservation.status" />
+            <Badge :variant="reservation.status === 'pendiente' ? 'secondary' : 'default'">
+              {{ reservation.status }}
+            </Badge>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <div class="font-mono text-xs uppercase tracking-wider mb-1" style="color: var(--text-dim);">Fecha</div>
-              <div class="text-sm" style="font-family: 'DM Sans', sans-serif; color: var(--text-primary);">
-                {{ formatDate(reservation.start_time) }}
-              </div>
+              <div class="font-mono text-xs uppercase tracking-wider text-muted-foreground">Fecha</div>
+              <div class="text-foreground">{{ formatDate(reservation.start_time) }}</div>
             </div>
             <div>
-              <div class="font-mono text-xs uppercase tracking-wider mb-1" style="color: var(--text-dim);">Horario</div>
-              <div class="text-sm font-mono" style="color: var(--lime);">
-                {{ formatTime(reservation.start_time) }} — {{ formatTime(reservation.end_time) }}
-              </div>
+              <div class="font-mono text-xs uppercase tracking-wider text-muted-foreground">Horario</div>
+              <div class="font-mono text-lime">{{ formatTime(reservation.start_time) }} — {{ formatTime(reservation.end_time) }}</div>
             </div>
           </div>
         </a>
       </div>
 
-      <!-- Empty State -->
-      <div v-else-if="email && reservations.length === 0" class="text-center py-16">
-        <p class="font-mono text-xs" style="color: var(--text-dim);">
+      <!-- Empty States -->
+      <div v-else-if="email && reservations.length === 0" class="py-16 text-center">
+        <p class="font-mono text-xs text-muted-foreground">
           — NO SE ENCONTRARON RESERVAS PARA ESTE EMAIL —
         </p>
       </div>
 
-      <div v-else class="text-center py-16">
-        <p class="font-mono text-xs" style="color: var(--text-dim);">
+      <div v-else class="py-16 text-center">
+        <p class="font-mono text-xs text-muted-foreground">
           — INGRESA TU EMAIL PARA VER TUS RESERVAS —
         </p>
       </div>

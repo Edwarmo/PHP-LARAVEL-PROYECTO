@@ -1,13 +1,13 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { Head, Link } from '@inertiajs/vue3'
-import { gsap } from 'gsap'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
-import StatusBadge from '@/Components/StatusBadge.vue'
+import { Badge } from '@/Components/ui'
+import { Card, CardContent } from '@/Components/ui'
+import { Button } from '@/Components/ui'
 
 const props = defineProps({
   metrics: Object,
-  proximasReservas: Array,
   pendientes: Array,
 })
 
@@ -16,13 +16,6 @@ const animatedMetrics = ref({
   confirmadas: 0,
   hoy: 0,
   esta_semana: 0,
-})
-
-const currentDate = new Date().toLocaleDateString('es-CO', { 
-  weekday: 'long', 
-  year: 'numeric', 
-  month: 'long', 
-  day: 'numeric' 
 })
 
 const metricColors = {
@@ -53,12 +46,18 @@ onMounted(() => {
   if (props.metrics) {
     Object.keys(props.metrics).forEach((key) => {
       if (animatedMetrics.value.hasOwnProperty(key)) {
-        gsap.to(animatedMetrics.value, {
-          [key]: Number(props.metrics[key]) || 0,
-          duration: 1.5,
-          ease: 'power2.out',
-          snap: { [key]: 1 },
-        })
+        const target = Number(props.metrics[key]) || 0
+        const start = 0
+        const duration = 1500
+        const startTime = performance.now()
+        
+        const animate = (currentTime) => {
+          const elapsed = currentTime - startTime
+          const progress = Math.min(elapsed / duration, 1)
+          animatedMetrics.value[key] = Math.floor(start + (target - start) * progress)
+          if (progress < 1) requestAnimationFrame(animate)
+        }
+        requestAnimationFrame(animate)
       }
     })
   }
@@ -68,37 +67,41 @@ onMounted(() => {
 <template>
   <Head title="Panel de Control" />
   <PublicLayout>
-    <div class="max-w-7xl mx-auto px-4 py-8">
+    <div class="mx-auto max-w-7xl px-4 py-8">
       <!-- Header -->
       <div class="mb-8">
-        <div class="font-mono text-xs uppercase tracking-wide" style="color: var(--text-dim);">Panel de control</div>
-        <div class="font-mono text-xs mt-1" style="color: var(--text-muted);">{{ currentDate }}</div>
+        <div class="font-mono text-xs uppercase tracking-wide text-muted-foreground">Panel de control</div>
+        <div class="font-mono text-xs text-muted-foreground">
+          {{ new Date().toLocaleDateString('es-CO', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) }}
+        </div>
       </div>
 
       <!-- Metrics Grid -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-px mb-12" style="background: var(--border);">
-        <div
+      <div class="mb-12 grid grid-cols-2 gap-px border border-cyan/20 lg:grid-cols-4">
+        <Card
           v-for="(value, key) in animatedMetrics"
           :key="key"
-          class="p-6"
-          style="background: var(--bg-base);"
+          class="border-0 rounded-none bg-card/50"
         >
-          <div class="text-5xl font-light" style="font-family: 'Cormorant Garamond', serif;" :style="{ color: metricColors[key] }">
-            {{ Math.round(value) }}
-          </div>
-          <div class="font-mono text-xs uppercase mt-2" style="color: var(--text-dim);">
-            {{ metricLabels[key] }}
-          </div>
-        </div>
+          <CardContent class="p-6">
+            <div class="text-5xl font-light" :style="{ color: metricColors[key] }">
+              {{ Math.round(value) }}
+            </div>
+            <div class="mt-2 font-mono text-xs uppercase text-muted-foreground">
+              {{ metricLabels[key] }}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       <!-- Recent Reservations Table -->
       <div class="mt-12">
-        <div class="font-mono text-xs uppercase tracking-wide mb-4" style="color: var(--text-dim);">Reservas recientes</div>
+        <div class="mb-4 font-mono text-xs uppercase tracking-wide text-muted-foreground">
+          Reservas recientes
+        </div>
         
-        <div class="border" style="border-color: var(--border); border-radius: 0;">
-          <!-- Header -->
-          <div class="hidden md:grid grid-cols-5 gap-4 p-4 border-b font-mono text-xs uppercase" style="border-color: var(--border); color: var(--text-dim);">
+        <Card class="border border-cyan/20 bg-card/50">
+          <div class="hidden border-b border-border md:grid grid-cols-5 gap-4 p-4 font-mono text-xs uppercase text-muted-foreground">
             <div>Espacio</div>
             <div>Usuario</div>
             <div>Fecha</div>
@@ -106,49 +109,43 @@ onMounted(() => {
             <div>Acción</div>
           </div>
 
-          <!-- Rows -->
           <div
             v-for="reserva in pendientes"
             :key="reserva.slug"
-            class="flex flex-col md:grid md:grid-cols-5 gap-2 md:gap-4 p-4 border-b transition-colors hover:cursor-pointer"
-            style="border-color: rgba(var(--border-hover), 0.3); font-family: 'DM Sans', sans-serif; font-size: 0.875rem;"
-            @mouseenter="$event.currentTarget.style.background = 'var(--bg-card)'"
-            @mouseleave="$event.currentTarget.style.background = 'transparent'"
+            class="flex flex-col md:grid md:grid-cols-5 gap-2 md:gap-4 p-4 border-b transition-colors hover:bg-card/80"
           >
             <div class="flex justify-between md:block items-center">
-              <span class="md:hidden font-mono text-xs" style="color: var(--text-dim);">Espacio:</span>
-              <span style="color: var(--text-primary);">{{ reserva.space_name }}</span>
+              <span class="md:hidden font-mono text-xs text-muted-foreground">Espacio:</span>
+              <span class="text-foreground">{{ reserva.space_name }}</span>
             </div>
             <div class="flex justify-between md:block items-center">
-              <span class="md:hidden font-mono text-xs" style="color: var(--text-dim);">Usuario:</span>
-              <span style="color: var(--text-muted);">{{ reserva.user_name }}</span>
+              <span class="md:hidden font-mono text-xs text-muted-foreground">Usuario:</span>
+              <span class="text-muted-foreground">{{ reserva.user_name }}</span>
             </div>
-            <div class="flex justify-between md:block items-center font-mono text-xs" style="color: var(--text-muted);">
-              <span class="md:hidden font-mono text-xs" style="color: var(--text-dim);">Fecha:</span>
+            <div class="flex justify-between md:block items-center font-mono text-xs text-muted-foreground">
+              <span class="md:hidden font-mono text-xs text-muted-foreground">Fecha:</span>
               <span>{{ formatDate(reserva.start_time) }} {{ formatTime(reserva.start_time) }}</span>
             </div>
             <div class="flex justify-between md:block items-center">
-              <span class="md:hidden font-mono text-xs" style="color: var(--text-dim);">Estado:</span>
-              <StatusBadge :status="reserva.status" />
+              <span class="md:hidden font-mono text-xs text-muted-foreground">Estado:</span>
+              <Badge :variant="reserva.status === 'pendiente' ? 'secondary' : 'default'">
+                {{ reserva.status }}
+              </Badge>
             </div>
             <div class="flex gap-2 mt-2 md:mt-0 justify-end md:justify-start">
               <Link
                 :href="`/admin/reservations/${reserva.slug}`"
-                class="px-3 py-1 border text-xs uppercase transition-colors"
-                style="border-color: var(--border); color: var(--cyan); border-radius: 0;"
-                @mouseenter="$event.target.style.borderColor = 'var(--cyan)'"
-                @mouseleave="$event.target.style.borderColor = 'var(--border)'"
+                class="px-3 py-1 border text-xs uppercase transition-colors border-cyan/50 text-cyan hover:bg-cyan hover:text-black"
               >
                 Ver
               </Link>
             </div>
           </div>
 
-          <!-- Empty State -->
-          <div v-if="!pendientes.length" class="p-12 text-center font-mono text-xs" style="color: var(--text-dim);">
+          <div v-if="!pendientes.length" class="p-12 text-center font-mono text-xs text-muted-foreground">
             — SIN RESERVAS PENDIENTES —
           </div>
-        </div>
+        </Card>
       </div>
     </div>
   </PublicLayout>

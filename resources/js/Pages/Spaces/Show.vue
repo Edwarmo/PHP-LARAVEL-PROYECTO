@@ -1,8 +1,10 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { Head, Link, router } from '@inertiajs/vue3'
-import { gsap } from 'gsap'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
+import { Badge } from '@/Components/ui'
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui'
+import { Button } from '@/Components/ui'
 
 const props = defineProps({
   space: Object,
@@ -34,17 +36,7 @@ function bookSlot(slot) {
   router.visit(`/reservations/new?space=${props.space.slug}&start=${startTime}&duration=60`)
 }
 
-watch(slotsForDate, () => {
-  setTimeout(() => {
-    const items = document.querySelectorAll('.slot-item')
-    if (items.length > 0) {
-      gsap.from(items, { y: 20, opacity: 0, stagger: 0.05, duration: 0.5, ease: 'power3.out' })
-    }
-  }, 50)
-})
-
 onMounted(() => {
-  gsap.from('.reveal-left', { y: 30, opacity: 0, stagger: 0.1, duration: 0.8, ease: 'power3.out' })
   if (selectedDate.value) selectDay(selectedDate.value)
 })
 </script>
@@ -52,97 +44,84 @@ onMounted(() => {
 <template>
   <Head :title="space.name" />
   <PublicLayout>
-    <div class="max-w-7xl mx-auto px-4 py-8">
+    <div class="mx-auto max-w-7xl px-4 py-8">
       <div class="grid gap-8 lg:grid-cols-[1fr_380px]">
         <!-- Left Column -->
         <div>
-          <div class="reveal-left font-mono text-xs uppercase tracking-wide" style="color: var(--text-dim);">
+          <div class="text-muted-foreground">
             <Link href="/" class="hover:opacity-70">Salas</Link> / {{ space.name }}
           </div>
 
-          <div class="reveal-left flex items-center gap-3 mt-4">
-            <span class="px-3 py-1 border text-xs uppercase" style="border-color: var(--border); color: var(--text-muted); border-radius: 0;">
+          <div class="mt-4 flex items-center gap-3">
+            <Badge variant="outline" class="border-border text-muted-foreground">
               {{ space.type }}
-            </span>
-            <span class="font-mono text-xs" style="color: var(--text-dim);">{{ space.capacity }} personas</span>
+            </Badge>
+            <span class="font-mono text-xs text-muted-foreground">{{ space.capacity }} personas</span>
           </div>
 
-          <h1 class="reveal-left text-3xl md:text-5xl lg:text-7xl font-light mt-4 break-words" style="font-family: 'Cormorant Garamond', serif; color: var(--text-primary);">
+          <h1 class="mt-4 break-words text-3xl font-light md:text-5xl lg:text-7xl text-foreground">
             {{ space.name }}
           </h1>
 
-          <div class="reveal-left w-10 h-px mt-2 mb-6" style="background: var(--cyan);"></div>
+          <div class="mb-6 mt-2 h-px w-10 bg-cyan"></div>
 
-          <p class="reveal-left leading-relaxed" style="font-family: 'DM Sans', sans-serif; color: var(--text-muted);">
+          <p class="text-muted-foreground">
             {{ space.description }}
           </p>
 
-          <div v-if="space.rules" class="reveal-left mt-8">
-            <h2 class="font-mono text-xs uppercase tracking-wide mb-3" style="color: var(--text-dim);">Reglas de uso</h2>
+          <div v-if="space.rules" class="mt-8">
+            <h2 class="mb-3 font-mono text-xs uppercase tracking-wide text-muted-foreground">Reglas de uso</h2>
             <ul class="space-y-2">
-              <li v-for="(rule, i) in space.rules.split('\n')" :key="i" class="text-sm" style="font-family: 'DM Sans', sans-serif; color: var(--text-muted);">
-                <span style="color: var(--text-dim);">—</span> {{ rule }}
+              <li v-for="(rule, i) in space.rules.split('\n')" :key="i" class="text-sm text-muted-foreground">
+                <span class="text-muted-foreground">—</span> {{ rule }}
               </li>
             </ul>
           </div>
 
-          <div class="reveal-left mt-8 pt-6" style="border-top: 1px solid var(--border);">
-            <div class="font-mono text-xs uppercase tracking-wide mb-2" style="color: var(--text-dim);">Precio por hora</div>
-            <div class="text-3xl" style="font-family: 'JetBrains Mono', monospace; color: var(--lime);">
+          <div class="border-t border-border pt-6 mt-8">
+            <div class="font-mono text-xs uppercase tracking-wide mb-2 text-muted-foreground">Precio por hora</div>
+            <div class="font-mono text-3xl text-lime">
               ${{ Number(space.price_per_hour).toLocaleString('es-CO') }}
             </div>
           </div>
         </div>
 
         <!-- Right Column -->
-        <div class="sticky top-24 h-fit mt-8 lg:mt-0">
-          <div class="font-mono text-xs uppercase tracking-wide mb-4" style="color: var(--text-dim);">Disponibilidad</div>
+        <div class="sticky top-24 h-fit">
+          <div class="mb-4 font-mono text-xs uppercase tracking-wide text-muted-foreground">Disponibilidad</div>
 
           <!-- Day Tabs -->
-          <div class="flex gap-px mb-4 overflow-x-auto pb-2" style="scrollbar-width: none; -ms-overflow-style: none;">
-            <button
+          <div class="mb-4 flex gap-px overflow-x-auto pb-2">
+            <Button
               v-for="day in nextAvailableDays"
               :key="day.date"
+              :variant="selectedDate === day.date ? 'default' : 'ghost'"
+              size="sm"
               @click="selectDay(day.date)"
-              class="flex-1 min-w-[52px] py-3 px-2 flex flex-col items-center gap-1 transition-colors"
-              :style="{
-                background: 'transparent',
-                borderBottom: selectedDate === day.date ? '1px solid rgba(240,244,248,0.5)' : '1px solid var(--border)',
-                color: selectedDate === day.date ? 'var(--text-primary)' : 'var(--text-muted)',
-              }"
             >
-              <span class="font-mono text-[10px] font-light lowercase">{{ day.day_name.slice(0,3) }}</span>
-              <span class="font-mono text-base font-light">{{ day.date.split('-')[2] }}</span>
-              <span
-                class="w-1 h-1 rounded-full transition-opacity"
-                :style="{ background: 'var(--text-primary)', opacity: selectedDate === day.date ? 1 : 0 }"
-              />
-            </button>
+              <div class="flex flex-col">
+                <span class="text-[10px] font-light">{{ day.day_name.slice(0, 3) }}</span>
+                <span>{{ day.date.split('-')[2] }}</span>
+              </div>
+            </Button>
           </div>
 
           <!-- Slots -->
-          <div class="grid grid-cols-2 lg:grid-cols-1 gap-px">
-            <div v-if="loadingSlots" class="col-span-full py-8 text-center font-mono text-xs" style="color: var(--text-dim);">cargando...</div>
-            <button
+          <div class="grid grid-cols-2 gap-px border border-cyan/20 lg:grid-cols-1">
+            <div v-if="loadingSlots" class="col-span-full py-8 text-center font-mono text-xs text-muted-foreground">cargando...</div>
+            <Button
               v-else
               v-for="slot in slotsForDate"
               :key="slot.label"
-              @click="bookSlot(slot)"
+              :variant="slot.available ? 'ghost' : 'secondary'"
               :disabled="!slot.available"
-              class="slot-item w-full py-3 px-4 text-center lg:text-left transition-colors"
-              :style="{
-                background: 'transparent',
-                borderBottom: '0.5px solid var(--border)',
-                opacity: slot.available ? 1 : 0.3,
-                cursor: slot.available ? 'pointer' : 'not-allowed',
-              }"
-              @mouseenter="e => { if (slot.available) e.currentTarget.style.background = 'rgba(240,244,248,0.03)' }"
-              @mouseleave="e => e.currentTarget.style.background = 'transparent'"
+              class="w-full justify-start"
+              @click="bookSlot(slot)"
             >
-              <span class="font-mono text-xs font-light" :style="{ color: slot.available ? 'var(--text-primary)' : 'var(--text-dim)' }">
+              <span class="font-mono text-xs" :class="{ 'text-muted-foreground': !slot.available }">
                 {{ slot.available ? slot.label : slot.label + ' — ocupado' }}
               </span>
-            </button>
+            </Button>
           </div>
         </div>
       </div>

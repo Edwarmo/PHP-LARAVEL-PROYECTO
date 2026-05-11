@@ -1,7 +1,8 @@
-import { defineConfig } from 'vite';
-import laravel from 'laravel-vite-plugin';
-import vue from '@vitejs/plugin-vue';
-import tailwindcss from '@tailwindcss/vite';
+import { defineConfig } from 'vite'
+import laravel from 'laravel-vite-plugin'
+import vue from '@vitejs/plugin-vue'
+import tailwindcss from '@tailwindcss/vite'
+import { resolve } from 'node:path'
 
 export default defineConfig({
     plugins: [
@@ -27,10 +28,28 @@ export default defineConfig({
     },
     resolve: {
         alias: {
-            '@': '/resources/js',
+            '@': resolve(__dirname, 'resources/js'),
         },
     },
     optimizeDeps: {
         include: ['animejs'],
     },
-});
+    test: {
+        environment: 'happy-dom',
+        globals: true,
+        setupFiles: ['./resources/js/tests/setup.js'],
+        coverage: {
+            provider: 'istanbul',
+            reporter: ['text', 'json', 'html'],
+            reportsDirectory: './coverage',
+            include: ['resources/js/Components/ui/**/*.vue'],
+            all: true,
+            threshold: {
+                branches: 97,
+                functions: 97,
+                lines: 97,
+                statements: 97
+            }
+        }
+    }
+})
