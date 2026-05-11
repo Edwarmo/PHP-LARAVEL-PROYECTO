@@ -1,15 +1,21 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { Link, usePage } from '@inertiajs/vue3'
 import AnimatedBackground from '@/Components/AnimatedBackground.vue'
-import gsap from 'gsap'
+import PageLoader from '@/Components/PageLoader.vue'
+import { Skeleton } from '@/Components/ui'
 
 const page = usePage()
 const navbarRef = ref(null)
 const isScrolled = ref(false)
 const isMobileMenuOpen = ref(false)
+const isLoading = ref(false)
 
-onMounted(() => {
+let gsapInstance = null
+
+onMounted(async () => {
+  const { gsap } = await import('gsap')
+  gsapInstance = gsap
   gsap.from(navbarRef.value, {
     y: -100,
     opacity: 0,
@@ -17,10 +23,16 @@ onMounted(() => {
     ease: 'power3.out'
   })
 
-  window.addEventListener('scroll', () => {
-    isScrolled.value = window.scrollY > 20
-  })
+  window.addEventListener('scroll', handleScroll)
 })
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
+})
+
+function handleScroll() {
+  isScrolled.value = window.scrollY > 20
+}
 </script>
 
 <template>
@@ -112,7 +124,6 @@ onMounted(() => {
             >
               historial
             </Link>
-            
             <Link v-if="$page.props.auth.user?.email === 'admin@videoconfreservas.com'" href="/admin" @click="isMobileMenuOpen = false" class="font-mono text-sm lowercase text-lime py-2">admin</Link>
             <Link href="/logout" method="post" as="button" @click="isMobileMenuOpen = false" class="font-mono text-sm lowercase text-muted-foreground py-2 text-left">salir</Link>
           </nav>
@@ -120,7 +131,7 @@ onMounted(() => {
       </header>
 
       <div v-if="page.props.flash?.success" class="mx-auto max-w-7xl px-6 pt-4">
-        <div class="border border-cyan bg-cyan/10 px-4 py-3 text-sm text-cyan">
+        <div class="border border-cyan bg-cyan/10 px-4 py-3 text-sm text-cyan animate-in fade-in slide-in-from-top-2 duration-300">
           {{ page.props.flash.success }}
         </div>
       </div>
@@ -131,7 +142,7 @@ onMounted(() => {
 
       <footer class="border-t border-border py-6 text-center">
         <p class="font-mono text-xs text-muted-foreground">
-          © 2026 VideoConf — Powered by Quantum
+          &copy; 2026 VideoConf — Powered by Quantum
         </p>
       </footer>
     </div>

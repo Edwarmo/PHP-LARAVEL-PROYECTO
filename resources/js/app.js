@@ -6,20 +6,14 @@ import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 import { Ziggy } from './ziggy';
-import gsap from 'gsap';
-
-// Force register all GSAP plugins
-if (typeof window !== 'undefined') {
-  gsap.config({ force3D: true });
-}
+import PageLoader from '@/Components/PageLoader.vue';
 
 createInertiaApp({
     title: (title) => `${title} — Reservas VideoConf`,
-    resolve: (name) =>
-        resolvePageComponent(
-            `./Pages/${name}.vue`,
-            import.meta.glob('./Pages/**/*.vue'),
-        ),
+    resolve: (name) => {
+        const pages = import.meta.glob('./Pages/**/*.vue');
+        return resolvePageComponent(`./Pages/${name}.vue`, pages);
+    },
     setup({ el, App, props, plugin }) {
         return createApp({ render: () => h(App, props) })
             .use(plugin)
@@ -27,6 +21,7 @@ createInertiaApp({
             .mount(el);
     },
     progress: {
-        color: '#6366f1',
+        color: '#00dcff',
+        showSpinner: false,
     },
 });
