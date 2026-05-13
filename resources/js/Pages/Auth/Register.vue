@@ -1,7 +1,6 @@
 <script setup>
 import { Head, useForm, Link } from '@inertiajs/vue3'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/Components/ui'
 import { Button } from '@/Components/ui'
 import { Input } from '@/Components/ui'
 import { Label } from '@/Components/ui'
@@ -24,14 +23,14 @@ const submit = () => {
   <Head title="Registro" />
   <PublicLayout>
     <div class="max-w-md mx-auto px-4 py-20">
-      <Card class="border border-cyan/20 bg-card/80 backdrop-blur-sm">
-        <CardHeader>
-          <CardTitle class="text-2xl font-light">Únete a nosotros</CardTitle>
-          <CardDescription>NUEVA CUENTA — Crea tu cuenta ahora</CardDescription>
-        </CardHeader>
-        
-        <form @submit.prevent="submit">
-          <CardContent class="space-y-4">
+      <div class="border border-cyan/10 bg-background/20 backdrop-blur-2xl shadow-lg shadow-cyan/5">
+        <div class="flex flex-col gap-4 p-6">
+          <div class="space-y-1.5">
+            <h3 class="text-2xl font-light text-foreground">Únete a nosotros</h3>
+            <p class="text-xs text-muted-foreground font-mono">NUEVA CUENTA — Crea tu cuenta ahora</p>
+          </div>
+
+          <form @submit.prevent="submit" class="space-y-4">
             <div class="space-y-2">
               <Label for="name">Nombre Completo</Label>
               <Input
@@ -42,7 +41,7 @@ const submit = () => {
                 required
                 :disabled="form.processing"
               />
-              <p v-if="form.errors.name" class="text-xs text-destructive">{{ form.errors.name }}</p>
+              <p v-if="form.errors.name" class="text-xs text-rose-400">{{ form.errors.name }}</p>
             </div>
 
             <div class="space-y-2">
@@ -55,7 +54,7 @@ const submit = () => {
                 required
                 :disabled="form.processing"
               />
-              <p v-if="form.errors.email" class="text-xs text-destructive">{{ form.errors.email }}</p>
+              <p v-if="form.errors.email" class="text-xs text-rose-400">{{ form.errors.email }}</p>
             </div>
 
             <div class="space-y-2">
@@ -68,7 +67,7 @@ const submit = () => {
                 required
                 :disabled="form.processing"
               />
-              <p v-if="form.errors.password" class="text-xs text-destructive">{{ form.errors.password }}</p>
+              <p v-if="form.errors.password" class="text-xs text-rose-400">{{ form.errors.password }}</p>
             </div>
 
             <div class="space-y-2">
@@ -82,24 +81,24 @@ const submit = () => {
                 :disabled="form.processing"
               />
             </div>
-          </CardContent>
 
-          <CardFooter class="flex flex-col space-y-4">
-            <Button
-              type="submit"
-              class="w-full bg-lime text-black hover:bg-lime/90"
-              :disabled="form.processing"
-            >
-              {{ form.processing ? 'REGISTRANDO...' : 'CREAR CUENTA' }}
-            </Button>
+            <div class="flex flex-col space-y-4 pt-2">
+              <Button
+                type="submit"
+                class="w-full bg-lime text-black hover:bg-lime/90"
+                :disabled="form.processing"
+              >
+                {{ form.processing ? 'REGISTRANDO...' : 'CREAR CUENTA' }}
+              </Button>
 
-            <p class="text-center text-xs text-muted-foreground">
-              ¿Ya tienes cuenta?
-              <Link href="/login" class="text-cyan hover:underline">Inicia sesión</Link>
-            </p>
-          </CardFooter>
-        </form>
-      </Card>
+              <p class="text-center text-xs text-muted-foreground">
+                ¿Ya tienes cuenta?
+                <Link href="/login" class="text-cyan hover:underline">Inicia sesión</Link>
+              </p>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   </PublicLayout>
 </template>

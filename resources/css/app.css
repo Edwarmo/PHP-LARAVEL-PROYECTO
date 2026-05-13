@@ -136,6 +136,21 @@
   ::selection {
     @apply bg-cyan/20 text-foreground;
   }
+
+  /* select / option styling */
+  select {
+    @apply text-foreground;
+  }
+  select option {
+    @apply bg-[#0c1018] text-foreground;
+  }
+
+  /* date input color scheme */
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.7) sepia(1) hue-rotate(150deg);
+    cursor: pointer;
+  }
+
   /* custom scrollbar */
   ::-webkit-scrollbar {
     @apply w-1;

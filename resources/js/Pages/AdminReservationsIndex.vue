@@ -58,21 +58,21 @@ function applyFilters() {
       </div>
 
       <!-- Filters -->
-      <Card class="mb-10 border border-cyan/20 bg-card/50">
-        <CardContent class="grid grid-cols-1 gap-4 p-6 sm:grid-cols-2 lg:grid-cols-5">
+      <div class="mb-10 backdrop-blur-2xl bg-background/20 border border-cyan/10 p-6 shadow-lg shadow-cyan/5">
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
           <div class="flex flex-col gap-1.5">
             <Label>Tipo</Label>
-            <select v-model="form.space_id" class="h-9 rounded-none border border-border bg-background px-3 text-xs">
-              <option value="">Todos los espacios</option>
-              <option v-for="space in spaces" :key="space.id" :value="space.id">{{ space.name }}</option>
+            <select v-model="form.space_id" class="h-9 w-full rounded-none border border-cyan/20 bg-background/60 px-3 text-xs text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-cyan">
+              <option value="" class="bg-[#0c1018] text-foreground">Todos los espacios</option>
+              <option v-for="space in spaces" :key="space.id" :value="space.id" class="bg-[#0c1018] text-foreground">{{ space.name }}</option>
             </select>
           </div>
 
           <div class="flex flex-col gap-1.5">
             <Label>Estado</Label>
-            <select v-model="form.status" class="h-9 rounded-none border border-border bg-background px-3 text-xs">
-              <option value="">Todos los estados</option>
-              <option v-for="status in statuses" :key="status" :value="status">{{ status }}</option>
+            <select v-model="form.status" class="h-9 w-full rounded-none border border-cyan/20 bg-background/60 px-3 text-xs text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-cyan">
+              <option value="" class="bg-[#0c1018] text-foreground">Todos los estados</option>
+              <option v-for="status in statuses" :key="status" :value="status" class="bg-[#0c1018] text-foreground">{{ status }}</option>
             </select>
           </div>
 
@@ -91,8 +91,8 @@ function applyFilters() {
               Filtrar Resultados
             </Button>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       <!-- Content -->
       <div class="min-h-[400px]">

@@ -41,7 +41,7 @@ function handleScroll() {
       <header
         ref="navbarRef"
         class="sticky top-0 z-50 transition-all duration-300"
-        :class="isScrolled ? 'backdrop-blur-xl bg-background/80 border-b border-border' : ''"
+        :class="isScrolled ? 'backdrop-blur-2xl bg-background/30 border-b border-cyan/10 shadow-lg shadow-cyan/5' : ''"
       >
         <div class="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
           <Link href="/" class="flex items-center gap-3 group">

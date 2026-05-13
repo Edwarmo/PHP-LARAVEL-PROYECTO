@@ -3,7 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { Head } from '@inertiajs/vue3'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
 import SpaceCard from '@/Components/SpaceCard.vue'
-import { Input, Button, Card, CardContent } from '@/Components/ui'
+import { Input, Button } from '@/Components/ui'
 
 const props = defineProps({
   spaces: Object,
@@ -70,25 +70,24 @@ onMounted(async () => {
 
     <!-- Filters -->
     <div ref="heroCta" class="mx-auto mt-8 max-w-7xl px-4">
-      <Card class="border border-cyan/20 bg-card/50">
-        <CardContent class="flex flex-col gap-4 sm:flex-row">
+      <div class="border border-cyan/10 bg-background/20 backdrop-blur-2xl p-6 shadow-lg shadow-cyan/5">
+        <div class="flex flex-col gap-4 sm:flex-row">
           <Input
             v-model="search"
             type="text"
             placeholder="Buscar sala..."
             class="flex-1"
           />
+
           <select
             v-model="typeFilter"
-            class="h-9 rounded-none border border-border bg-background px-3 text-xs"
+            class="h-9 w-full rounded-none border border-cyan/20 bg-background/60 px-3 text-xs text-foreground sm:w-48 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-cyan"
           >
-            <option value="">Todos los tipos</option>
-            <option value="sala">Sala</option>
-            <option value="auditorio">Auditorio</option>
-            <option value="estudio">Estudio</option>
+            <option value="" class="bg-[#0c1018] text-foreground">Todos los tipos</option>
+            <option v-for="type in ['Sala Privada', 'Sala Pública']" :key="type" :value="type" class="bg-[#0c1018] text-foreground">{{ type }}</option>
           </select>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
 
     <!-- Grid -->
