@@ -32,3 +32,11 @@ services:
         value: array
       - key: QUEUE_CONNECTION
         value: sync
+      - key: RESEND_API_KEY
+        sync: false
+      - key: MAIL_MAILER
+        value: resend
+      - key: MAIL_FROM_ADDRESS
+        value: onboarding@resend.dev
+      - key: MAIL_FROM_NAME
+        value: "VideoConf Reservas"
