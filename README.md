@@ -1,7 +1,7 @@
 # Sistema de Reservas de Salas de Videoconferencia
 
 Sistema web profesional para la gestión y reserva de espacios de videoconferencia.  
-**Stack:** Laravel 11 · Vue 3 · Inertia.js · shadcn/ui · TailwindCSS v4 · Vite 8 · pnpm · Docker (nginx+fpm)
+**Stack:** Laravel 13 · Vue 3 · Inertia.js · shadcn/ui · TailwindCSS v4 · Vite 8 · pnpm · PostgreSQL · Docker (nginx+fpm)
 
 ---
 
@@ -9,13 +9,13 @@ Sistema web profesional para la gestión y reserva de espacios de videoconferenc
 
 | Capa | Tecnología |
 |------|-----------|
-| Backend | Laravel 11 (PHP 8.3) |
+| Backend | Laravel 13 (PHP 8.4) |
 | Frontend | Vue 3 + Inertia.js SPA + SSR |
 | UI | shadcn/vue + TailwindCSS v4 + tw-animate-css |
 | Build | Vite 8 + pnpm 10 + code splitting |
 | BD | PostgreSQL 14+ (Supabase) |
-| Cache | Redis (Upstash) via middleware opcional |
-| Contenedor | Docker multi-stage (node:22 → php:8.3-fpm-alpine + nginx) |
+| Cache | Redis (Upstash) vía middleware opcional |
+| Contenedor | Docker multi-stage (node:22 → php:8.4-fpm-alpine + nginx) |
 
 ---
 
@@ -24,6 +24,7 @@ Sistema web profesional para la gestión y reserva de espacios de videoconferenc
 - PHP 8.3+, Composer 2.x
 - Node.js 22+, pnpm 10+
 - PostgreSQL 14+ (o Supabase)
+- Redis (opcional, para caché)
 - Docker (opcional)
 
 ---
@@ -101,7 +102,7 @@ pnpm run deploy:fast
 
 ```bash
 pnpm run pre-deploy
-# Valida: lockfile → build → lint → tests → secrets
+# Valida: lockfile → build → typecheck → tests → secrets
 ```
 
 ---
@@ -119,45 +120,63 @@ pnpm run pre-deploy
 
 ---
 
-## Estructura del proyecto
+## Arquitectura (Clean Architecture — 4 capas)
 
 ```
-├── app/
-│   ├── Http/
-│   │   ├── Controllers/       # Lógica de negocio
-│   │   └── Middleware/
-│   │       ├── HandleInertiaRequests.php
-│   │       └── RedisCache.php # Cache inteligente por tags
-│   └── Models/                # Space, Reservation, User
-├── docker/
-│   ├── nginx.conf             # Config nginx + caché assets 365d
-│   ├── entrypoint.sh          # php-fpm + nginx + migrate
-│   └── start.sh               # (legacy)
-├── resources/
-│   ├── css/app.css            # Tailwind v4 + shadcn/ui vars
-│   └── js/
-│       ├── app.js             # Entry point Vue + Inertia
-│       ├── Components/
-│       │   └── ui/            # shadcn/vue components
-│       │       ├── Button.vue
-│       │       ├── Card.vue / CardHeader / CardTitle / etc.
-│       │       ├── Input.vue / Label.vue
-│       │       ├── Badge.vue
-│       │       ├── Dialog.vue / DialogContent / etc.
-│       │       ├── Skeleton.vue
-│       │       └── index.js   # Barrel exports
-│       ├── composables/
-│       │   └── useAnimate.js  # GSAP lazy + timeline
-│       ├── Layouts/
-│       │   └── PublicLayout.vue
-│       └── Pages/
-│           ├── Auth/          # Login, Register
-│           ├── Spaces/        # Index, Show
-│           ├── Reservations/  # Create, Show, History
-│           └── Admin/         # Dashboard, Calendar, CRUD
-├── Dockerfile                 # Multi-stage optimizado
-├── vite.config.js             # Code splitting + esbuild minify
-└── .git/hooks/pre-push        # Validación automática
+app/
+├── Application/
+│   ├── Contracts/             # Interfaces de repositorios
+│   ├── Mail/                  # Mailables (ShouldQueue)
+│   └── UseCases/              # Lógica de negocio orquestada
+│       ├── Admin/             #   Dashboard, Calendar, CRUD
+│       ├── Api/               #   Slots API
+│       ├── SpaceUseCase.php
+│       ├── ReservationUseCase.php
+│       └── FinalizeReservationsUseCase.php
+├── Domain/
+│   └── Models/                # Space, Reservation, User, etc.
+├── Infrastructure/
+│   ├── Cache/                 # RedisCacheMiddleware
+│   ├── Repositories/          # EloquentSpaceRepository, etc.
+│   └── Services/              # AvailabilityService
+└── Http/
+    ├── Controllers/           # Capa delgada (inyectan UseCases)
+    └── Middleware/
+        └── HandleInertiaRequests.php
+```
+
+```
+resources/js/
+├── app.js                     # Entry point Vue + Inertia
+├── bootstrap.js               # Axios config
+├── ziggy.js                   # Route definitions (Ziggy)
+├── env.d.ts                   # TypeScript declarations
+├── types/domain.ts            # Interfaces compartidas
+├── lib/
+│   ├── formatters.ts          # formatDate, formatCurrency, etc.
+│   └── utils.js               # cn() helper (clsx + tailwind-merge)
+├── composables/
+│   ├── useSlots.ts            # Fetch slots por fecha
+│   ├── useFilterNavigation.ts # Filtros con Inertia
+│   └── useAnimatedNumber.ts   # Contador animado
+├── Components/
+│   ├── AnimatedBackground.vue
+│   ├── SpaceCard.vue
+│   ├── StatusBadge.vue
+│   └── ui/                    # shadcn/vue components
+│       ├── Button.vue
+│       ├── Card.vue / CardHeader / CardTitle / etc.
+│       ├── Input.vue / Label.vue
+│       ├── Badge.vue
+│       ├── Skeleton.vue
+│       └── index.js           # Barrel exports
+├── Layouts/
+│   └── PublicLayout.vue       # Navbar, footer, flash messages
+└── Pages/
+    ├── Auth/                  # Login, Register
+    ├── Spaces/                # Index, Show
+    ├── Reservations/          # Create, Show, History
+    └── Admin/                 # Dashboard, Calendar, CRUD
 ```
 
 ---
@@ -182,7 +201,7 @@ El build produce chunks separados para carga paralela:
 - **Tema:** Dark mode por defecto con acentos cyan `#00dcff` y lima `#c8ff00`
 - **Glassmorphism:** `backdrop-blur-xl bg-background/80` en navbar, cards con borde sutil
 - **Animaciones:** GSAP (carga lazy, ~70KB solo cuando se necesita)
-- **Componentes:** shadcn/vue adaptados: Button, Card, Input, Badge, Dialog, Skeleton
+- **Componentes:** shadcn/vue adaptados: Button, Card, Input, Badge, Label, Skeleton
 - **Tipografía:** JetBrains Mono (UI) + Cormorant Garamond (headings) + DM Sans (body)
 - **Responsive:** Mobile-first con menú hamburguesa
 
@@ -190,7 +209,7 @@ El build produce chunks separados para carga paralela:
 
 ## Cache con Redis (opcional)
 
-Middleware `RedisCache` disponible para cachear respuestas GET:
+Middleware `RedisCacheMiddleware` en `Infrastructure/Cache/` disponible para cachear respuestas GET:
 
 ```php
 // En routes/web.php
@@ -268,7 +287,7 @@ Tags y TTLs predefinidos:
 
 | Error | Causa | Solución |
 |-------|-------|----------|
-| `ERR_PNPM_IGNORED_BUILDS` | esbuild bloqueado por pnpm | `pnpm approve-builds esbuild` |
+| `ERR_PNPM_IGNORED_BUILDS` | esbuild bloqueado por pnpm | `pnpm approve-builds esbuild && pnpm rebuild esbuild` |
 | Assets 404 en producción | Falta `pnpm run build` | Ejecutar antes del deploy |
 | `No open ports detected` | Puerto incorrecto | Usar `PORT=8080` |
 | `SQLSTATE[08006]` | Puerto DB incorrecto | Usar 6543 (pooler Supabase) |
