@@ -46,8 +46,8 @@ FROM php-base AS runtime
 
 # Nginx + process runner
 RUN apk add --no-cache nginx && \
-    mkdir -p /var/www/html/storage/framework/{sessions,views,cache/data} \
-             /var/www/html/storage/framework/views \
+    mkdir -p /var/www/html/storage/logs \
+             /var/www/html/storage/framework/{sessions,views,cache/data} \
              /var/www/html/bootstrap/cache \
              /run/nginx && \
     chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && \
