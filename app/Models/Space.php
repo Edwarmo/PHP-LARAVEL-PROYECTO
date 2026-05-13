@@ -57,13 +57,8 @@ class Space extends Model
         return $this->hasMany(Reservation::class);
     }
 
-    public function setIsActiveAttribute($value)
-    {
-        $this->attributes['is_active'] = $value ? 'true' : 'false';
-    }
-
     public function scopeActive($query)
     {
-        return $query->where('is_active', 'true');
+        return $query->where('is_active', true);
     }
 }

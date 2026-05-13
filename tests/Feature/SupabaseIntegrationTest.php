@@ -19,11 +19,18 @@ class SupabaseIntegrationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Force PGSQL connection to hit real Supabase instance
         config(['database.default' => 'pgsql']);
         DB::purge('pgsql');
         DB::setDefaultConnection('pgsql');
+
+        // Skip if Supabase isn't reachable (e.g., in CI or local dev with SQLite)
+        try {
+            DB::connection()->getPdo();
+        } catch (\Exception $e) {
+            $this->markTestSkipped('Supabase not available: ' . $e->getMessage());
+        }
 
         $this->withoutMockingConsoleOutput();
     }

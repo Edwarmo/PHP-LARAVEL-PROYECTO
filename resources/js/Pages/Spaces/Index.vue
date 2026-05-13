@@ -12,6 +12,11 @@ const props = defineProps({
 const search = ref('')
 const typeFilter = ref('')
 
+const heroTitle = ref(null)
+const heroSubtitle = ref(null)
+const heroCta = ref(null)
+const gridContainer = ref(null)
+
 const filteredSpaces = computed(() => {
   let result = props.spaces.data || []
   if (search.value) {
@@ -26,8 +31,23 @@ const filteredSpaces = computed(() => {
   return result
 })
 
-onMounted(() => {
-  // GSAP animations would be maintained
+onMounted(async () => {
+  const { gsap } = await import('gsap')
+
+  const tl = gsap.timeline({ defaults: { duration: 0.7, ease: 'power3.out' } })
+  tl.from(heroTitle.value, { opacity: 0, y: 24 })
+    .from(heroSubtitle.value, { opacity: 0, y: 24 }, '+=0.3')
+    .from(heroCta.value, { opacity: 0, y: 24 }, '+=0.3')
+
+  if (gridContainer.value) {
+    gsap.from(gridContainer.value.children, {
+      opacity: 0,
+      y: 16,
+      duration: 0.5,
+      stagger: 0.08,
+      ease: 'power2.out',
+    })
+  }
 })
 </script>
 
@@ -39,17 +59,17 @@ onMounted(() => {
       <div class="font-mono text-xs uppercase tracking-[0.3em] text-center text-muted-foreground">
         RESERVAS
       </div>
-      <h1 class="mt-2 text-center text-3xl sm:text-4xl md:text-5xl lg:text-7xl" style="font-family: 'Cormorant Garamond', serif;">
+      <h1 ref="heroTitle" class="mt-2 text-center text-3xl sm:text-4xl md:text-5xl lg:text-7xl" style="font-family: 'Cormorant Garamond', serif;">
         <span class="block font-light text-foreground sm:inline">Salas de </span>
         <span class="mt-1 block text-cyan sm:mt-0 sm:inline">Videoconferencia</span>
       </h1>
-      <p class="mt-3 text-center text-sm md:text-base" style="font-family: 'DM Sans', sans-serif;">
+      <p ref="heroSubtitle" class="mt-3 text-center text-sm md:text-base" style="font-family: 'DM Sans', sans-serif;">
         Encuentra el espacio perfecto para tus reuniones virtuales
       </p>
     </div>
 
     <!-- Filters -->
-    <div class="mx-auto mt-8 max-w-7xl px-4">
+    <div ref="heroCta" class="mx-auto mt-8 max-w-7xl px-4">
       <Card class="border border-cyan/20 bg-card/50">
         <CardContent class="flex flex-col gap-4 sm:flex-row">
           <Input
@@ -73,11 +93,11 @@ onMounted(() => {
 
     <!-- Grid -->
     <div class="mx-auto mt-10 max-w-7xl px-4">
-      <div v-if="filteredSpaces.length > 0" class="grid grid-cols-1 gap-px border border-cyan/20 md:grid-cols-2 lg:grid-cols-3">
+      <div ref="gridContainer" v-if="filteredSpaces.length > 0" class="grid grid-cols-1 gap-px border border-cyan/20 md:grid-cols-2 lg:grid-cols-3">
         <div
           v-for="space in filteredSpaces"
           :key="space.id"
-          class="p-6"
+          class="space-card-wrapper p-6"
           style="background: var(--bg-base);"
         >
           <SpaceCard :space="space" />

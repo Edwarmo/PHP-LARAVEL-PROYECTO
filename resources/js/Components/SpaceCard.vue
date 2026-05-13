@@ -20,7 +20,7 @@ const typeLabels = {
 <template>
   <Link
     :href="`/spaces/${space.slug}`"
-    class="block border border-cyan/20 p-6 transition-colors hover:border-cyan/50"
+    class="block border border-cyan/20 p-6 transition-all duration-200 ease-out hover:-translate-y-1 hover:border-cyan/40"
   >
     <div class="flex items-start justify-between mb-4">
       <Badge variant="outline" class="border-cyan text-cyan">

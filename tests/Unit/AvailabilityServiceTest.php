@@ -11,6 +11,7 @@ use App\Models\Space;
 use App\Services\AvailabilityService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 /**
@@ -56,7 +57,7 @@ final class AvailabilityServiceTest extends TestCase
     //  Escenario 1 — Slot libre
     // ══════════════════════════════════════════════════════════════
 
-    /** @test */
+    #[Test]
     public function slot_libre_retorna_true(): void
     {
         $monday = Carbon::now()->next(Carbon::MONDAY);
@@ -72,7 +73,7 @@ final class AvailabilityServiceTest extends TestCase
     //  Escenario 2 — Colisión con reserva activa
     // ══════════════════════════════════════════════════════════════
 
-    /** @test */
+    #[Test]
     public function slot_ocupado_por_reserva_retorna_false(): void
     {
         $monday = Carbon::now()->next(Carbon::MONDAY);
@@ -91,7 +92,7 @@ final class AvailabilityServiceTest extends TestCase
         $this->assertFalse($result, 'Un slot solapado con una reserva confirmada debe retornar false.');
     }
 
-    /** @test */
+    #[Test]
     public function slot_ocupado_por_reserva_pendiente_retorna_false(): void
     {
         $monday = Carbon::now()->next(Carbon::MONDAY);
@@ -109,7 +110,7 @@ final class AvailabilityServiceTest extends TestCase
         $this->assertFalse($result, 'Un slot solapado con una reserva pendiente debe retornar false.');
     }
 
-    /** @test */
+    #[Test]
     public function reserva_rechazada_no_bloquea_slot(): void
     {
         $monday = Carbon::now()->next(Carbon::MONDAY);
@@ -132,7 +133,7 @@ final class AvailabilityServiceTest extends TestCase
     //  Escenario 3 — Colisión con blocked_slot
     // ══════════════════════════════════════════════════════════════
 
-    /** @test */
+    #[Test]
     public function slot_ocupado_por_bloqueo_manual_retorna_false(): void
     {
         $monday = Carbon::now()->next(Carbon::MONDAY);
@@ -151,7 +152,7 @@ final class AvailabilityServiceTest extends TestCase
         $this->assertFalse($result, 'Un slot solapado con un bloqueo manual debe retornar false.');
     }
 
-    /** @test */
+    #[Test]
     public function bloqueo_contiguo_no_solapado_no_bloquea(): void
     {
         $monday = Carbon::now()->next(Carbon::MONDAY);
@@ -174,7 +175,7 @@ final class AvailabilityServiceTest extends TestCase
     //  Escenario 4 — Fuera de horario comercial
     // ══════════════════════════════════════════════════════════════
 
-    /** @test */
+    #[Test]
     public function slot_fuera_de_horario_semanal_retorna_false(): void
     {
         $monday = Carbon::now()->next(Carbon::MONDAY);
@@ -188,7 +189,7 @@ final class AvailabilityServiceTest extends TestCase
         $this->assertFalse($result, 'Un slot fuera del horario configurado debe retornar false.');
     }
 
-    /** @test */
+    #[Test]
     public function slot_en_dia_sin_disponibilidad_retorna_false(): void
     {
         // Usamos domingo (día 0) — la sala solo tiene disponibilidad lunes
@@ -201,7 +202,7 @@ final class AvailabilityServiceTest extends TestCase
         $this->assertFalse($result, 'Un slot en un día sin disponibilidad configurada debe retornar false.');
     }
 
-    /** @test */
+    #[Test]
     public function slot_que_cruza_limite_de_horario_retorna_false(): void
     {
         $monday = Carbon::now()->next(Carbon::MONDAY);
@@ -219,7 +220,7 @@ final class AvailabilityServiceTest extends TestCase
     //  getAvailableSlots — casos base
     // ══════════════════════════════════════════════════════════════
 
-    /** @test */
+    #[Test]
     public function get_available_slots_retorna_todos_los_slots_del_dia(): void
     {
         $monday = Carbon::now()->next(Carbon::MONDAY);
@@ -231,7 +232,7 @@ final class AvailabilityServiceTest extends TestCase
         $this->assertEquals('17:00 – 18:00', $slots->last()['label']);
     }
 
-    /** @test */
+    #[Test]
     public function get_available_slots_excluye_slots_con_reserva(): void
     {
         $monday = Carbon::now()->next(Carbon::MONDAY);
@@ -244,14 +245,14 @@ final class AvailabilityServiceTest extends TestCase
 
         $slots = $this->service->getAvailableSlots($this->space, $monday);
 
-        $this->assertCount(9, $slots);
+        $this->assertCount(10, $slots);
         $this->assertFalse(
-            $slots->contains('label', '10:00 – 11:00'),
-            'El slot 10:00–11:00 debe estar excluido por la reserva confirmada.'
+            $slots->firstWhere('label', '10:00 – 11:00')['available'],
+            'El slot 10:00–11:00 debe estar marcado como no disponible por la reserva confirmada.'
         );
     }
 
-    /** @test */
+    #[Test]
     public function get_available_slots_retorna_vacio_sin_disponibilidad(): void
     {
         $sunday = Carbon::now()->next(Carbon::SUNDAY);
@@ -264,7 +265,7 @@ final class AvailabilityServiceTest extends TestCase
     //  getNextAvailableDays
     // ══════════════════════════════════════════════════════════════
 
-    /** @test */
+    #[Test]
     public function get_next_available_days_retorna_dias_con_slots(): void
     {
         $days = $this->service->getNextAvailableDays($this->space, 7);
@@ -277,7 +278,7 @@ final class AvailabilityServiceTest extends TestCase
         });
     }
 
-    /** @test */
+    #[Test]
     public function isSlotAvailable_lanza_excepcion_si_start_mayor_que_end(): void
     {
         $this->expectException(\InvalidArgumentException::class);
@@ -288,5 +289,115 @@ final class AvailabilityServiceTest extends TestCase
             $monday->copy()->setTime(11, 0),
             $monday->copy()->setTime(10, 0),
         );
+    }
+
+    #[Test]
+    public function get_next_available_days_retorna_vacio_sin_availabilities(): void
+    {
+        $spaceSinDisp = Space::factory()->create();
+
+        $days = $this->service->getNextAvailableDays($spaceSinDisp, 7);
+
+        $this->assertTrue($days->isEmpty());
+    }
+
+    #[Test]
+    public function slot_exactamente_al_inicio_del_horario_esta_disponible(): void
+    {
+        $monday = Carbon::now()->next(Carbon::MONDAY);
+        $start  = $monday->copy()->setTime(8, 0);
+        $end    = $monday->copy()->setTime(9, 0);
+
+        $result = $this->service->isSlotAvailable($this->space, $start, $end);
+
+        $this->assertTrue($result, 'El slot exactamente al inicio del horario debe estar disponible.');
+    }
+
+    #[Test]
+    public function slot_exactamente_al_final_del_horario_esta_disponible(): void
+    {
+        $monday = Carbon::now()->next(Carbon::MONDAY);
+        $start  = $monday->copy()->setTime(17, 0);
+        $end    = $monday->copy()->setTime(18, 0);
+
+        $result = $this->service->isSlotAvailable($this->space, $start, $end);
+
+        $this->assertTrue($result, 'El slot exactamente al final del horario debe estar disponible.');
+    }
+
+    #[Test]
+    public function get_available_slots_con_slots_de_30_minutos(): void
+    {
+        config(['app.reservation_slot_minutes' => 30]);
+
+        $monday = Carbon::now()->next(Carbon::MONDAY);
+        $slots  = $this->service->getAvailableSlots($this->space, $monday);
+
+        // 08:00–18:00 con slots de 30 min = 20 slots
+        $this->assertCount(20, $slots);
+        $this->assertEquals('08:00 – 08:30', $slots->first()['label']);
+        $this->assertEquals('17:30 – 18:00', $slots->last()['label']);
+    }
+
+    #[Test]
+    public function reserva_con_status_cancelada_no_bloquea_slot(): void
+    {
+        $monday = Carbon::now()->next(Carbon::MONDAY);
+        $start  = $monday->copy()->setTime(10, 0);
+        $end    = $monday->copy()->setTime(11, 0);
+
+        Reservation::factory()->cancelada()->create([
+            'space_id'   => $this->space->id,
+            'start_time' => $start,
+            'end_time'   => $end,
+        ]);
+
+        $result = $this->service->isSlotAvailable($this->space, $start, $end);
+
+        $this->assertTrue($result, 'Una reserva cancelada no debe bloquear el slot.');
+    }
+
+    #[Test]
+    public function reserva_con_status_finalizada_no_bloquea_slot(): void
+    {
+        $monday = Carbon::now()->next(Carbon::MONDAY);
+        $start  = $monday->copy()->setTime(10, 0);
+        $end    = $monday->copy()->setTime(11, 0);
+
+        Reservation::factory()->finalizada()->create([
+            'space_id'   => $this->space->id,
+            'start_time' => $start,
+            'end_time'   => $end,
+        ]);
+
+        $result = $this->service->isSlotAvailable($this->space, $start, $end);
+
+        $this->assertTrue($result, 'Una reserva finalizada no debe bloquear el slot.');
+    }
+
+    #[Test]
+    public function multiple_reservas_en_el_mismo_dia_bloquean_slots_correctamente(): void
+    {
+        $monday = Carbon::now()->next(Carbon::MONDAY);
+
+        // Reservas en 09:00-10:00 y 14:00-15:00
+        Reservation::factory()->confirmada()->create([
+            'space_id'   => $this->space->id,
+            'start_time' => $monday->copy()->setTime(9, 0),
+            'end_time'   => $monday->copy()->setTime(10, 0),
+        ]);
+        Reservation::factory()->confirmada()->create([
+            'space_id'   => $this->space->id,
+            'start_time' => $monday->copy()->setTime(14, 0),
+            'end_time'   => $monday->copy()->setTime(15, 0),
+        ]);
+
+        $slots = $this->service->getAvailableSlots($this->space, $monday);
+
+        $this->assertCount(10, $slots);
+        $this->assertFalse($slots->firstWhere('label', '09:00 – 10:00')['available']);
+        $this->assertFalse($slots->firstWhere('label', '14:00 – 15:00')['available']);
+        $this->assertTrue($slots->firstWhere('label', '10:00 – 11:00')['available']);
+        $this->assertTrue($slots->firstWhere('label', '13:00 – 14:00')['available']);
     }
 }

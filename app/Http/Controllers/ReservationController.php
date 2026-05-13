@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Events\ReservationCreated;
 use App\Models\Reservation;
 use App\Models\Space;
+use App\Services\AvailabilityService;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -41,8 +44,23 @@ final class ReservationController extends Controller
             'notes'      => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $startTime = \Carbon\Carbon::parse($data['start_time']);
+        $space = Space::with(['availabilities', 'blockedSlots'])->findOrFail($data['space_id']);
+
+        if (! (bool) $space->is_active) {
+            return back()->withErrors(['space_id' => 'Esta sala no está activa.'])->withInput();
+        }
+
+        $startTime = Carbon::parse($data['start_time']);
         $endTime = $startTime->copy()->addMinutes($data['duration']);
+
+        if ($startTime->isPast()) {
+            return back()->withErrors(['start_time' => 'No se puede reservar en una fecha pasada.'])->withInput();
+        }
+
+        $availService = AvailabilityService::make();
+        if (! $availService->isSlotAvailable($space, $startTime, $endTime)) {
+            return back()->withErrors(['start_time' => 'El horario seleccionado no está disponible.'])->withInput();
+        }
 
         $reservation = Reservation::create([
             'space_id'   => $data['space_id'],
@@ -53,6 +71,8 @@ final class ReservationController extends Controller
             'notes'      => $data['notes'] ?? null,
             'status'     => Reservation::STATUS_PENDIENTE,
         ]);
+
+        event(new ReservationCreated($reservation));
 
         return redirect()->route('reservations.show', $reservation->slug);
     }

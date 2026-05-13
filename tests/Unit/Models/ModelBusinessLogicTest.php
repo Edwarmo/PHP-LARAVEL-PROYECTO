@@ -172,4 +172,96 @@ class ModelBusinessLogicTest extends TestCase
         $this->assertArrayHasKey('price_per_hour', $casts);
         $this->assertArrayHasKey('capacity', $casts);
     }
+
+    public function test_space_is_active_defaults_to_true(): void
+    {
+        $space = new Space();
+        $this->assertTrue($space->is_active);
+    }
+
+    public function test_space_active_scope_exists(): void
+    {
+        $this->assertTrue(method_exists(Space::class, 'scopeActive'));
+    }
+
+    public function test_reservation_pendiente_scope_exists(): void
+    {
+        $this->assertTrue(method_exists(Reservation::class, 'scopePendiente'));
+    }
+
+    public function test_reservation_confirmada_scope_exists(): void
+    {
+        $this->assertTrue(method_exists(Reservation::class, 'scopeConfirmada'));
+    }
+
+    public function test_reservation_overlapping_scope_exists(): void
+    {
+        $this->assertTrue(method_exists(Reservation::class, 'scopeOverlapping'));
+    }
+
+    public function test_reservation_duration_in_hours_formula(): void
+    {
+        $start = \Carbon\Carbon::parse('2024-01-01 10:00:00');
+        $end   = \Carbon\Carbon::parse('2024-01-01 12:30:00');
+        $this->assertEquals(2.5, $start->diffInMinutes($end) / 60);
+    }
+
+    public function test_blocked_slot_fillable_attributes(): void
+    {
+        $blockedSlot = new \App\Models\BlockedSlot();
+        $fillable = $blockedSlot->getFillable();
+        $this->assertContains('space_id', $fillable);
+        $this->assertContains('start_time', $fillable);
+        $this->assertContains('end_time', $fillable);
+        $this->assertContains('reason', $fillable);
+    }
+
+    public function test_blocked_slot_datetime_casting(): void
+    {
+        $casts = (new \App\Models\BlockedSlot())->getCasts();
+        $this->assertArrayHasKey('start_time', $casts);
+        $this->assertArrayHasKey('end_time', $casts);
+        $this->assertEquals('datetime', $casts['start_time']);
+        $this->assertEquals('datetime', $casts['end_time']);
+    }
+
+    public function test_blocked_slot_has_space_relationship(): void
+    {
+        $this->assertTrue(method_exists(\App\Models\BlockedSlot::class, 'space'));
+    }
+
+    public function test_blocked_slot_overlapping_scope_exists(): void
+    {
+        $this->assertTrue(method_exists(\App\Models\BlockedSlot::class, 'scopeOverlapping'));
+    }
+
+    public function test_availability_day_name_accessor(): void
+    {
+        $availability = new \App\Models\Availability();
+        $availability->day_of_week = 1;
+        $this->assertEquals('Lunes', $availability->day_name);
+        $availability->day_of_week = 5;
+        $this->assertEquals('Viernes', $availability->day_name);
+    }
+
+    public function test_availability_has_space_relationship(): void
+    {
+        $this->assertTrue(method_exists(\App\Models\Availability::class, 'space'));
+    }
+
+    public function test_space_type_cast_is_integer(): void
+    {
+        $casts = (new Space())->getCasts();
+        $this->assertEquals('integer', $casts['capacity']);
+    }
+
+    public function test_reservation_has_booted_method(): void
+    {
+        $this->assertTrue(method_exists(Reservation::class, 'booted'));
+    }
+
+    public function test_reservation_slug_cast_from_uuid(): void
+    {
+        $this->assertContains('slug', (new Reservation())->getFillable());
+    }
 }

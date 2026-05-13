@@ -14,7 +14,10 @@ class ExampleTest extends TestCase
      */
     public function test_the_application_returns_a_successful_response(): void
     {
-        // Create a space for testing
+        // Create a space and authenticate because / requires auth
+        $user = \App\Models\User::factory()->create();
+        $this->actingAs($user);
+
         \App\Models\Space::factory()->create(['is_active' => true]);
 
         $response = $this->get('/');

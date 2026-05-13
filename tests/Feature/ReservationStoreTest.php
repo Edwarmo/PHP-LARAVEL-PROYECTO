@@ -8,9 +8,11 @@ use App\Events\ReservationCreated;
 use App\Models\Availability;
 use App\Models\Reservation;
 use App\Models\Space;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 /**
@@ -31,6 +33,9 @@ final class ReservationStoreTest extends TestCase
 
         config(['app.reservation_slot_minutes' => 60]);
 
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
         $this->space  = Space::factory()->create(['is_active' => true]);
         $this->monday = Carbon::now()->next(Carbon::MONDAY);
 
@@ -47,7 +52,7 @@ final class ReservationStoreTest extends TestCase
     //  Reserva exitosa
     // ══════════════════════════════════════════════════════════════
 
-    /** @test */
+    #[Test]
     public function reserva_exitosa_crea_registro_y_dispara_evento(): void
     {
         Event::fake([ReservationCreated::class]);
@@ -57,7 +62,7 @@ final class ReservationStoreTest extends TestCase
             'user_name'  => 'María García',
             'user_email' => 'maria@example.com',
             'start_time' => $this->monday->copy()->setTime(10, 0)->format('Y-m-d H:i'),
-            'end_time'   => $this->monday->copy()->setTime(11, 0)->format('Y-m-d H:i'),
+            'duration'   => 60,
         ];
 
         $response = $this->post(route('reservations.store'), $payload);
@@ -80,7 +85,7 @@ final class ReservationStoreTest extends TestCase
     //  Validación de email
     // ══════════════════════════════════════════════════════════════
 
-    /** @test */
+    #[Test]
     public function email_invalido_retorna_error_422(): void
     {
         $response = $this->post(route('reservations.store'), [
@@ -88,13 +93,13 @@ final class ReservationStoreTest extends TestCase
             'user_name'  => 'Ana López',
             'user_email' => 'no-es-un-email',
             'start_time' => $this->monday->copy()->setTime(10, 0)->format('Y-m-d H:i'),
-            'end_time'   => $this->monday->copy()->setTime(11, 0)->format('Y-m-d H:i'),
+            'duration'   => 60,
         ]);
 
         $response->assertSessionHasErrors(['user_email']);
     }
 
-    /** @test */
+    #[Test]
     public function email_vacio_retorna_error_validacion(): void
     {
         $response = $this->post(route('reservations.store'), [
@@ -102,7 +107,7 @@ final class ReservationStoreTest extends TestCase
             'user_name'  => 'Ana López',
             'user_email' => '',
             'start_time' => $this->monday->copy()->setTime(10, 0)->format('Y-m-d H:i'),
-            'end_time'   => $this->monday->copy()->setTime(11, 0)->format('Y-m-d H:i'),
+            'duration'   => 60,
         ]);
 
         $response->assertSessionHasErrors(['user_email']);
@@ -112,7 +117,7 @@ final class ReservationStoreTest extends TestCase
     //  Validación de disponibilidad (colisión)
     // ══════════════════════════════════════════════════════════════
 
-    /** @test */
+    #[Test]
     public function slot_ocupado_retorna_error_de_disponibilidad(): void
     {
         Event::fake();
@@ -129,14 +134,14 @@ final class ReservationStoreTest extends TestCase
             'user_name'  => 'Pedro Martínez',
             'user_email' => 'pedro@example.com',
             'start_time' => $this->monday->copy()->setTime(10, 0)->format('Y-m-d H:i'),
-            'end_time'   => $this->monday->copy()->setTime(11, 0)->format('Y-m-d H:i'),
+            'duration'   => 60,
         ]);
 
         $response->assertSessionHasErrors(['start_time']);
         Event::assertNotDispatched(ReservationCreated::class);
     }
 
-    /** @test */
+    #[Test]
     public function slot_fuera_de_horario_retorna_error_de_disponibilidad(): void
     {
         Event::fake();
@@ -146,7 +151,7 @@ final class ReservationStoreTest extends TestCase
             'user_name'  => 'Luis Torres',
             'user_email' => 'luis@example.com',
             'start_time' => $this->monday->copy()->setTime(20, 0)->format('Y-m-d H:i'),
-            'end_time'   => $this->monday->copy()->setTime(21, 0)->format('Y-m-d H:i'),
+            'duration'   => 60,
         ]);
 
         $response->assertSessionHasErrors(['start_time']);
@@ -157,7 +162,7 @@ final class ReservationStoreTest extends TestCase
     //  Validaciones de campos requeridos
     // ══════════════════════════════════════════════════════════════
 
-    /** @test */
+    #[Test]
     public function campos_requeridos_retornan_errores(): void
     {
         $response = $this->post(route('reservations.store'), []);
@@ -167,11 +172,11 @@ final class ReservationStoreTest extends TestCase
             'user_name',
             'user_email',
             'start_time',
-            'end_time',
+            'duration',
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function sala_inactiva_no_acepta_reservas(): void
     {
         $spaceInactiva = Space::factory()->inactive()->create();
@@ -181,13 +186,13 @@ final class ReservationStoreTest extends TestCase
             'user_name'  => 'Carlos Ruiz',
             'user_email' => 'carlos@example.com',
             'start_time' => $this->monday->copy()->setTime(10, 0)->format('Y-m-d H:i'),
-            'end_time'   => $this->monday->copy()->setTime(11, 0)->format('Y-m-d H:i'),
+            'duration'   => 60,
         ]);
 
         $response->assertSessionHasErrors(['space_id']);
     }
 
-    /** @test */
+    #[Test]
     public function duracion_minima_debe_cumplirse(): void
     {
         $response = $this->post(route('reservations.store'), [
@@ -195,13 +200,13 @@ final class ReservationStoreTest extends TestCase
             'user_name'  => 'Ana Gómez',
             'user_email' => 'ana@example.com',
             'start_time' => $this->monday->copy()->setTime(10, 0)->format('Y-m-d H:i'),
-            'end_time'   => $this->monday->copy()->setTime(10, 30)->format('Y-m-d H:i'), // Solo 30 min
+            'duration'   => 15,
         ]);
 
-        $response->assertSessionHasErrors(['end_time']);
+        $response->assertSessionHasErrors(['duration']);
     }
 
-    /** @test */
+    #[Test]
     public function no_se_puede_reservar_en_fecha_pasada(): void
     {
         $response = $this->post(route('reservations.store'), [
@@ -209,7 +214,7 @@ final class ReservationStoreTest extends TestCase
             'user_name'  => 'Test User',
             'user_email' => 'test@example.com',
             'start_time' => Carbon::yesterday()->setTime(10, 0)->format('Y-m-d H:i'),
-            'end_time'   => Carbon::yesterday()->setTime(11, 0)->format('Y-m-d H:i'),
+            'duration'   => 60,
         ]);
 
         $response->assertSessionHasErrors(['start_time']);
