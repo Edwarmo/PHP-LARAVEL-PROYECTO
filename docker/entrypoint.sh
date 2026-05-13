@@ -10,10 +10,12 @@ if [ ! -f .env ]; then
     php artisan key:generate --force
 fi
 
-# Use SQLite for standalone Docker dev (override .env)
-export DB_CONNECTION=sqlite
-export DB_DATABASE=/var/www/html/database/database.sqlite
-touch database/database.sqlite
+# Use SQLite fallback if no DB_CONNECTION set via env
+if [ -z "$DB_CONNECTION" ]; then
+    export DB_CONNECTION=sqlite
+    export DB_DATABASE=/var/www/html/database/database.sqlite
+    touch database/database.sqlite
+fi
 
 php artisan config:clear
 php artisan route:clear
