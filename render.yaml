@@ -40,3 +40,5 @@ services:
         value: onboarding@resend.dev
       - key: MAIL_FROM_NAME
         value: "VideoConf Reservas"
+      - key: MAIL_TO_ADDRESS
+        sync: false

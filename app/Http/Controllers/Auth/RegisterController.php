@@ -33,9 +33,9 @@ class RegisterController extends Controller
         ]);
 
         Mail::raw(
-            "Hola {$user->name}, bienvenido a VideoConf Reservas.\n\nTu cuenta ha sido creada exitosamente. Ya puedes iniciar sesión y reservar espacios.",
-            function ($msg) use ($user) {
-                $msg->to($user->email)->subject('Bienvenido a VideoConf Reservas');
+            "Nuevo registro en VideoConf Reservas\n\nNombre: {$user->name}\nEmail: {$user->email}\nFecha: {$user->created_at}",
+            function ($msg) {
+                $msg->to(env('MAIL_TO_ADDRESS', 'tu@correo.com'))->subject('Nuevo usuario registrado');
             }
         );
 
