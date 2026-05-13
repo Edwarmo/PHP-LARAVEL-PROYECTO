@@ -23,6 +23,10 @@ final class SpaceController extends Controller
 
     public function show(Space $space): Response
     {
+        if (! (bool) $space->is_active) {
+            abort(404);
+        }
+
         $slotMinutes = (int) config('reservation.slot_minutes', env('RESERVATION_SLOT_MINUTES', 60));
 
         $space->load(['availabilities', 'blockedSlots']);
