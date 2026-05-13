@@ -4,19 +4,14 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
+use App\Application\Mail\ReservationStatusChangedMail;
 use App\Events\ReservationStatusChanged;
-use App\Notifications\ReservationStatusChangedNotification;
+use App\Domain\Models\Reservation;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Mail;
 
-/**
- * Envía el email de cambio de estado al usuario cuando un admin
- * confirma, rechaza o cancela su reserva.
- *
- * Implementa ShouldQueue para no bloquear el request HTTP del admin.
- */
 final class SendReservationStatusChangedEmail implements ShouldQueue
 {
     use InteractsWithQueue;
@@ -29,20 +24,18 @@ final class SendReservationStatusChangedEmail implements ShouldQueue
     {
         $reservation = $event->reservation->loadMissing('space');
 
-        // No enviar email para estados que no requieren notificación al usuario
         $notifiableStatuses = [
-            \App\Models\Reservation::STATUS_CONFIRMADA,
-            \App\Models\Reservation::STATUS_RECHAZADA,
-            \App\Models\Reservation::STATUS_CANCELADA,
+            Reservation::STATUS_CONFIRMADA,
+            Reservation::STATUS_RECHAZADA,
+            Reservation::STATUS_CANCELADA,
         ];
 
         if (! in_array($reservation->status, $notifiableStatuses, true)) {
             return;
         }
 
-        Notification::route('mail', [
-            $reservation->user_email => $reservation->user_name,
-        ])->notify(new ReservationStatusChangedNotification($reservation, $event->previousStatus));
+        Mail::to($reservation->user_email, $reservation->user_name)
+            ->send(new ReservationStatusChangedMail($reservation, $event->previousStatus));
     }
 
     public function failed(ReservationStatusChanged $event, \Throwable $exception): void

@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Listeners;
 
+use App\Application\Mail\ReservationCreatedMail;
 use App\Events\ReservationCreated;
 use App\Listeners\SendReservationConfirmationEmail;
-use App\Models\Reservation;
-use App\Models\Space;
+use App\Domain\Models\Reservation;
+use App\Domain\Models\Space;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Mail;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -21,7 +22,7 @@ final class SendReservationConfirmationEmailTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        Notification::fake();
+        Mail::fake();
         $this->space = new Space(['id' => 1, 'name' => 'Sala Test', 'slug' => 'sala-test']);
         $this->space->exists = true;
         $this->reservation = new Reservation([
@@ -42,10 +43,9 @@ final class SendReservationConfirmationEmailTest extends TestCase
         $event = new ReservationCreated($this->reservation);
         $listener = new SendReservationConfirmationEmail();
         $listener->handle($event);
-        Notification::assertSentTo(
-            Notification::route('mail', ['juan@example.com' => 'Juan Pérez']),
-            \App\Notifications\ReservationCreatedNotification::class
-        );
+        Mail::assertQueued(ReservationCreatedMail::class, function ($mail) {
+            return $mail->hasTo('juan@example.com');
+        });
     }
 
     #[Test]

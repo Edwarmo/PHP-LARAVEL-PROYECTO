@@ -2,14 +2,12 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { Link, usePage } from '@inertiajs/vue3'
 import AnimatedBackground from '@/Components/AnimatedBackground.vue'
-import PageLoader from '@/Components/PageLoader.vue'
 import { Skeleton } from '@/Components/ui'
 
 const page = usePage()
 const navbarRef = ref(null)
 const isScrolled = ref(false)
 const isMobileMenuOpen = ref(false)
-const isLoading = ref(false)
 
 let gsapInstance = null
 

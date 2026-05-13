@@ -8,13 +8,6 @@ export { default as CardDescription } from './CardDescription.vue'
 export { default as CardContent } from './CardContent.vue'
 export { default as CardFooter } from './CardFooter.vue'
 
-export { default as Dialog } from './Dialog.vue'
-export { default as DialogContent } from './DialogContent.vue'
-export { default as DialogHeader } from './DialogHeader.vue'
-export { default as DialogTitle } from './DialogTitle.vue'
-export { default as DialogDescription } from './DialogDescription.vue'
-export { default as DialogFooter } from './DialogFooter.vue'
-
 export { default as Input } from './Input.vue'
 export { default as Label } from './Label.vue'
 export { default as Skeleton } from './Skeleton.vue'

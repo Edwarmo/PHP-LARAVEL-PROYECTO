@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
-use App\Models\Availability;
-use App\Models\Space;
+use App\Domain\Models\Availability;
+use App\Domain\Models\Space;
 use Illuminate\Database\Seeder;
 
 class SpaceSeeder extends Seeder

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Domain\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -32,12 +32,17 @@ class RegisterController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        Mail::raw(
-            "Nuevo registro en VideoConf Reservas\n\nNombre: {$user->name}\nEmail: {$user->email}\nFecha: {$user->created_at}",
-            function ($msg) {
-                $msg->to(env('MAIL_TO_ADDRESS', 'tu@correo.com'))->subject('Nuevo usuario registrado');
-            }
-        );
+        try {
+            Mail::raw(
+                "Nuevo registro en VideoConf Reservas\n\nNombre: {$user->name}\nEmail: {$user->email}\nFecha: {$user->created_at}",
+                function ($msg) {
+                    $msg->to(config('mail.to_address'))->subject('Nuevo usuario registrado');
+                }
+            );
+        } catch (\Throwable $e) {
+            // Log email error without breaking registration
+            logger()->error('Error enviando correo de registro: ' . $e->getMessage());
+        }
 
         Auth::login($user);
 

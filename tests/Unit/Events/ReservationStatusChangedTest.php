@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Events;
 
 use App\Events\ReservationStatusChanged;
-use App\Models\Reservation;
+use App\Domain\Models\Reservation;
 use PHPUnit\Framework\TestCase;
 
 final class ReservationStatusChangedTest extends TestCase

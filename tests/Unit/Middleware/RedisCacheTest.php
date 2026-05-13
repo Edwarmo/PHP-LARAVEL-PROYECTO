@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Middleware;
 
-use App\Http\Middleware\RedisCache;
+use App\Infrastructure\Cache\RedisCacheMiddleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use PHPUnit\Framework\Attributes\Test;
@@ -12,12 +12,12 @@ use Tests\TestCase;
 
 final class RedisCacheTest extends TestCase
 {
-    private RedisCache $middleware;
+    private RedisCacheMiddleware $middleware;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->middleware = new RedisCache();
+        $this->middleware = new RedisCacheMiddleware();
         Cache::flush();
     }
 

@@ -1,10 +1,12 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted } from 'vue'
 import { Head, Link, router } from '@inertiajs/vue3'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
 import { Badge } from '@/Components/ui'
 import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui'
 import { Button } from '@/Components/ui'
+import { useSlots } from '@/composables/useSlots'
+import { formatCurrency } from '@/lib/formatters'
 
 const props = defineProps({
   space: Object,
@@ -13,21 +15,12 @@ const props = defineProps({
 })
 
 const selectedDate = ref(props.nextAvailableDays[0]?.date ?? null)
-const loadingSlots = ref(false)
-const slotsForDate = ref([])
 
-async function selectDay(date) {
+const { slots: slotsForDate, loading: loadingSlots, fetchSlots } = useSlots(props.space.slug)
+
+function selectDay(date) {
   selectedDate.value = date
-  loadingSlots.value = true
-  try {
-    const res = await fetch(`/api/spaces/${props.space.slug}/slots?date=${date}`, { headers: { Accept: 'application/json' } })
-    const data = await res.json()
-    slotsForDate.value = data.slots ?? []
-  } catch {
-    slotsForDate.value = []
-  } finally {
-    loadingSlots.value = false
-  }
+  fetchSlots(date)
 }
 
 function bookSlot(slot) {
@@ -81,7 +74,7 @@ onMounted(() => {
           <div class="border-t border-border pt-6 mt-8">
             <div class="font-mono text-xs uppercase tracking-wide mb-2 text-muted-foreground">Precio por hora</div>
             <div class="font-mono text-3xl text-lime">
-              ${{ Number(space.price_per_hour).toLocaleString('es-CO') }}
+              ${{ formatCurrency(space.price_per_hour) }}
             </div>
           </div>
         </div>

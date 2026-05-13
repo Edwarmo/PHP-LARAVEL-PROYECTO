@@ -6,7 +6,6 @@ import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 import { Ziggy } from './ziggy';
-import PageLoader from '@/Components/PageLoader.vue';
 
 createInertiaApp({
     title: (title) => `${title} — Reservas VideoConf`,

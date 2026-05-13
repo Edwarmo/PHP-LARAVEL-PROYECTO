@@ -1,12 +1,14 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { Head, Link, router, useForm } from '@inertiajs/vue3'
+import { ref } from 'vue'
+import { Head, Link } from '@inertiajs/vue3'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
 import { Badge } from '@/Components/ui'
 import { Card, CardContent } from '@/Components/ui'
 import { Button } from '@/Components/ui'
 import { Input } from '@/Components/ui'
 import { Label } from '@/Components/ui'
+import { useFilterNavigation } from '@/composables/useFilterNavigation'
+import { formatDate, formatTime } from '@/lib/formatters'
 
 const props = defineProps({
   reservations: Object,
@@ -22,24 +24,11 @@ const form = ref({
   to: props.filters.to || '',
 })
 
+const { navigate } = useFilterNavigation('/admin/reservations')
+
 function applyFilters() {
-  router.get('/admin/reservations', form.value, {
-    preserveState: true,
-    only: ['reservations'],
-  })
+  navigate(form.value)
 }
-
-function formatDate(iso) {
-  const d = new Date(iso)
-  return d.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
-}
-
-function formatTime(iso) {
-  const d = new Date(iso)
-  return d.toTimeString().slice(0, 5)
-}
-
-onMounted(() => {})
 </script>
 
 <template>

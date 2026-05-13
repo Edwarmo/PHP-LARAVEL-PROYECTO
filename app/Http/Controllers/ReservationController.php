@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Events\ReservationCreated;
-use App\Models\Reservation;
-use App\Models\Space;
-use App\Services\AvailabilityService;
-use Carbon\Carbon;
+use App\Application\UseCases\ReservationUseCase;
+use App\Application\UseCases\SpaceUseCase;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -16,6 +13,11 @@ use Inertia\Response;
 
 final class ReservationController extends Controller
 {
+    public function __construct(
+        private readonly ReservationUseCase $reservationUseCase,
+        private readonly SpaceUseCase $spaceUseCase,
+    ) {}
+
     public function create(Request $request): Response
     {
         $spaceSlug = $request->query('space');
@@ -23,7 +25,7 @@ final class ReservationController extends Controller
         $duration = (int) $request->query('duration', 60);
 
         $space = $spaceSlug
-            ? Space::where('slug', $spaceSlug)->firstOrFail()
+            ? $this->spaceUseCase->findSpaceBySlug($spaceSlug) ?? abort(404)
             : null;
 
         return Inertia::render('Reservations/Create', [
@@ -44,86 +46,27 @@ final class ReservationController extends Controller
             'notes'      => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $space = Space::with(['availabilities', 'blockedSlots'])->findOrFail($data['space_id']);
-
-        if (! (bool) $space->is_active) {
-            return back()->withErrors(['space_id' => 'Esta sala no está activa.'])->withInput();
+        try {
+            $reservation = $this->reservationUseCase->create($data);
+            return redirect()->route('reservations.show', $reservation->slug);
+        } catch (\RuntimeException $e) {
+            return back()->withErrors(['space_id' => $e->getMessage()])->withInput();
+        } catch (\InvalidArgumentException $e) {
+            return back()->withErrors(['start_time' => $e->getMessage()])->withInput();
         }
-
-        $startTime = Carbon::parse($data['start_time']);
-        $endTime = $startTime->copy()->addMinutes($data['duration']);
-
-        if ($startTime->isPast()) {
-            return back()->withErrors(['start_time' => 'No se puede reservar en una fecha pasada.'])->withInput();
-        }
-
-        $availService = AvailabilityService::make();
-        if (! $availService->isSlotAvailable($space, $startTime, $endTime)) {
-            return back()->withErrors(['start_time' => 'El horario seleccionado no está disponible.'])->withInput();
-        }
-
-        $reservation = Reservation::create([
-            'space_id'   => $data['space_id'],
-            'user_name'  => $data['user_name'],
-            'user_email' => $data['user_email'],
-            'start_time' => $startTime,
-            'end_time'   => $endTime,
-            'notes'      => $data['notes'] ?? null,
-            'status'     => Reservation::STATUS_PENDIENTE,
-        ]);
-
-        event(new ReservationCreated($reservation));
-
-        return redirect()->route('reservations.show', $reservation->slug);
     }
 
     public function show(string $slug): Response
     {
-        $reservation = Reservation::with('space')
-            ->where('slug', $slug)
-            ->firstOrFail();
+        $data = $this->reservationUseCase->getReservationWithHistory($slug);
 
-        // Obtener otras reservas del mismo usuario (historial)
-        $userReservations = Reservation::with('space')
-            ->where('user_email', $reservation->user_email)
-            ->where('slug', '!=', $slug)
-            ->orderBy('start_time', 'desc')
-            ->limit(10)
-            ->get()
-            ->map(fn (Reservation $r) => [
-                'slug'       => $r->slug,
-                'space_name' => $r->space->name,
-                'start_time' => $r->start_time->toIso8601String(),
-                'end_time'   => $r->end_time->toIso8601String(),
-                'status'     => $r->status,
-            ]);
-
-        return Inertia::render('Reservations/Show', [
-            'reservation'      => $reservation,
-            'userReservations' => $userReservations,
-        ]);
+        return Inertia::render('Reservations/Show', $data);
     }
 
     public function history(Request $request): Response
     {
-        // Si no hay búsqueda, usamos el email del usuario logueado por defecto
         $email = $request->query('email', auth()->user()?->email);
-        $reservations = [];
-
-        if ($email) {
-            $reservations = Reservation::with('space')
-                ->where('user_email', $email)
-                ->orderBy('start_time', 'desc')
-                ->get()
-                ->map(fn (Reservation $r) => [
-                    'slug'       => $r->slug,
-                    'space_name' => $r->space->name,
-                    'user_name'  => $r->user_name,
-                    'start_time' => $r->start_time->toIso8601String(),
-                    'end_time'   => $r->end_time->toIso8601String(),
-                    'status'     => $r->status,
-                ]);
-        }
+        $reservations = $this->reservationUseCase->getHistory($email);
 
         return Inertia::render('Reservations/History', [
             'reservations' => $reservations,

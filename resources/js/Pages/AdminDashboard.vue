@@ -1,21 +1,14 @@
 <script setup>
-import { ref, onMounted } from 'vue'
 import { Head, Link } from '@inertiajs/vue3'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
 import { Badge } from '@/Components/ui'
 import { Card, CardContent } from '@/Components/ui'
 import { Button } from '@/Components/ui'
+import { formatDate, formatTime } from '@/lib/formatters'
 
 const props = defineProps({
   metrics: Object,
   pendientes: Array,
-})
-
-const animatedMetrics = ref({
-  pendientes: 0,
-  confirmadas: 0,
-  hoy: 0,
-  esta_semana: 0,
 })
 
 const metricColors = {
@@ -31,37 +24,6 @@ const metricLabels = {
   hoy: 'Próximas',
   esta_semana: 'Finalizadas',
 }
-
-function formatDate(iso) {
-  const d = new Date(iso)
-  return d.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
-}
-
-function formatTime(iso) {
-  const d = new Date(iso)
-  return d.toTimeString().slice(0, 5)
-}
-
-onMounted(() => {
-  if (props.metrics) {
-    Object.keys(props.metrics).forEach((key) => {
-      if (animatedMetrics.value.hasOwnProperty(key)) {
-        const target = Number(props.metrics[key]) || 0
-        const start = 0
-        const duration = 1500
-        const startTime = performance.now()
-        
-        const animate = (currentTime) => {
-          const elapsed = currentTime - startTime
-          const progress = Math.min(elapsed / duration, 1)
-          animatedMetrics.value[key] = Math.floor(start + (target - start) * progress)
-          if (progress < 1) requestAnimationFrame(animate)
-        }
-        requestAnimationFrame(animate)
-      }
-    })
-  }
-})
 </script>
 
 <template>
@@ -79,13 +41,13 @@ onMounted(() => {
       <!-- Metrics Grid -->
       <div class="mb-12 grid grid-cols-2 gap-px border border-cyan/20 lg:grid-cols-4">
         <Card
-          v-for="(value, key) in animatedMetrics"
+          v-for="(value, key) in metrics"
           :key="key"
           class="border-0 rounded-none bg-card/50"
         >
           <CardContent class="p-6">
             <div class="text-5xl font-light" :style="{ color: metricColors[key] }">
-              {{ Math.round(value) }}
+              {{ value }}
             </div>
             <div class="mt-2 font-mono text-xs uppercase text-muted-foreground">
               {{ metricLabels[key] }}

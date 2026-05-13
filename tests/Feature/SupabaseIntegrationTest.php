@@ -5,10 +5,10 @@ namespace Tests\Feature;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
-use App\Models\Space;
-use App\Models\Reservation;
-use App\Models\Availability;
-use App\Models\User;
+use App\Domain\Models\Space;
+use App\Domain\Models\Reservation;
+use App\Domain\Models\Availability;
+use App\Domain\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Models\BlockedSlot;
-use App\Models\Space;
+use App\Domain\Models\BlockedSlot;
+use App\Domain\Models\Space;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

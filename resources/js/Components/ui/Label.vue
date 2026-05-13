@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils'
 
 const props = defineProps({
   class: String,
-  for: String
+  htmlFor: String
 })
 
 const classes = computed(() => cn(
@@ -14,7 +14,7 @@ const classes = computed(() => cn(
 </script>
 
 <template>
-  <label :class="classes" :for="for">
+  <label :class="classes" :for="htmlFor">
     <slot />
   </label>
 </template>

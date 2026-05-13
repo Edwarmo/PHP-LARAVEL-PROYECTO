@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Listeners;
 
+use App\Application\Mail\ReservationStatusChangedMail;
 use App\Events\ReservationStatusChanged;
 use App\Listeners\SendReservationStatusChangedEmail;
-use App\Models\Reservation;
-use App\Models\Space;
+use App\Domain\Models\Reservation;
+use App\Domain\Models\Space;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Mail;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -21,7 +22,7 @@ final class SendReservationStatusChangedEmailTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        Notification::fake();
+        Mail::fake();
         $this->space = new Space(['id' => 1, 'name' => 'Sala Test', 'slug' => 'sala-test']);
         $this->space->exists = true;
         $this->reservation = new Reservation([
@@ -42,10 +43,9 @@ final class SendReservationStatusChangedEmailTest extends TestCase
         $event = new ReservationStatusChanged($this->reservation, Reservation::STATUS_PENDIENTE);
         $listener = new SendReservationStatusChangedEmail();
         $listener->handle($event);
-        Notification::assertSentTo(
-            Notification::route('mail', ['juan@example.com' => 'Juan Pérez']),
-            \App\Notifications\ReservationStatusChangedNotification::class
-        );
+        Mail::assertQueued(ReservationStatusChangedMail::class, function ($mail) {
+            return $mail->hasTo('juan@example.com');
+        });
     }
 
     #[Test]
@@ -55,10 +55,9 @@ final class SendReservationStatusChangedEmailTest extends TestCase
         $event = new ReservationStatusChanged($this->reservation, Reservation::STATUS_PENDIENTE);
         $listener = new SendReservationStatusChangedEmail();
         $listener->handle($event);
-        Notification::assertSentTo(
-            Notification::route('mail', ['juan@example.com' => 'Juan Pérez']),
-            \App\Notifications\ReservationStatusChangedNotification::class
-        );
+        Mail::assertQueued(ReservationStatusChangedMail::class, function ($mail) {
+            return $mail->hasTo('juan@example.com');
+        });
     }
 
     #[Test]
@@ -68,10 +67,9 @@ final class SendReservationStatusChangedEmailTest extends TestCase
         $event = new ReservationStatusChanged($this->reservation, Reservation::STATUS_CONFIRMADA);
         $listener = new SendReservationStatusChangedEmail();
         $listener->handle($event);
-        Notification::assertSentTo(
-            Notification::route('mail', ['juan@example.com' => 'Juan Pérez']),
-            \App\Notifications\ReservationStatusChangedNotification::class
-        );
+        Mail::assertQueued(ReservationStatusChangedMail::class, function ($mail) {
+            return $mail->hasTo('juan@example.com');
+        });
     }
 
     #[Test]
@@ -81,7 +79,7 @@ final class SendReservationStatusChangedEmailTest extends TestCase
         $event = new ReservationStatusChanged($this->reservation, Reservation::STATUS_CONFIRMADA);
         $listener = new SendReservationStatusChangedEmail();
         $listener->handle($event);
-        Notification::assertNothingSent();
+        Mail::assertNothingQueued();
     }
 
     #[Test]
@@ -91,7 +89,7 @@ final class SendReservationStatusChangedEmailTest extends TestCase
         $event = new ReservationStatusChanged($this->reservation, Reservation::STATUS_CONFIRMADA);
         $listener = new SendReservationStatusChangedEmail();
         $listener->handle($event);
-        Notification::assertNothingSent();
+        Mail::assertNothingQueued();
     }
 
     #[Test]

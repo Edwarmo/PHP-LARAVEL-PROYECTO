@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit;
 
-use App\Models\Availability;
-use App\Models\BlockedSlot;
-use App\Models\Reservation;
-use App\Models\Space;
-use App\Services\AvailabilityService;
+use App\Domain\Models\Availability;
+use App\Domain\Models\BlockedSlot;
+use App\Domain\Models\Reservation;
+use App\Domain\Models\Space;
+use App\Infrastructure\Services\AvailabilityService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;

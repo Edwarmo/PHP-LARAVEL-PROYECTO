@@ -8,7 +8,11 @@ use App\Events\ReservationCreated;
 use App\Events\ReservationStatusChanged;
 use App\Listeners\SendReservationConfirmationEmail;
 use App\Listeners\SendReservationStatusChangedEmail;
-use App\Services\AvailabilityService;
+use App\Application\Contracts\ReservationRepositoryInterface;
+use App\Application\Contracts\SpaceRepositoryInterface;
+use App\Infrastructure\Repositories\EloquentReservationRepository;
+use App\Infrastructure\Repositories\EloquentSpaceRepository;
+use App\Infrastructure\Services\AvailabilityService;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
@@ -23,6 +27,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        // Repository bindings
+        $this->app->bind(SpaceRepositoryInterface::class, EloquentSpaceRepository::class);
+        $this->app->bind(ReservationRepositoryInterface::class, EloquentReservationRepository::class);
+
         // Registrar AvailabilityService como singleton
         // Lee RESERVATION_SLOT_MINUTES del .env una sola vez por ciclo de vida
         $this->app->singleton(AvailabilityService::class, function () {

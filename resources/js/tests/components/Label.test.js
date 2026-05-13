@@ -13,7 +13,7 @@ describe('Label', () => {
 
   it('applies for attribute', () => {
     const wrapper = mount(Label, {
-      props: { for: 'email-input' },
+      props: { htmlFor: 'email-input' },
       slots: { default: 'Email' }
     })
     expect(wrapper.attributes('for')).toBe('email-input')

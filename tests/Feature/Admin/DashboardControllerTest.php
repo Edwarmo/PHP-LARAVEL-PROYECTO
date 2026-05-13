@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Admin;
 
-use App\Models\Reservation;
-use App\Models\Space;
-use App\Models\User;
+use App\Domain\Models\Reservation;
+use App\Domain\Models\Space;
+use App\Domain\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
