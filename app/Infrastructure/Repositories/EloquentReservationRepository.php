@@ -84,6 +84,23 @@ final class EloquentReservationRepository implements ReservationRepositoryInterf
             ->get();
     }
 
+    public function getTodayReservations(): Collection
+    {
+        return Reservation::with('space')
+            ->whereIn('status', [Reservation::STATUS_PENDIENTE, Reservation::STATUS_CONFIRMADA])
+            ->whereDate('start_time', today())
+            ->orderBy('start_time')
+            ->get();
+    }
+
+    public function getRecentReservations(int $limit = 20): Collection
+    {
+        return Reservation::with('space')
+            ->orderBy('start_time', 'desc')
+            ->limit($limit)
+            ->get();
+    }
+
     public function getCalendarReservations(string $weekStart, string $weekEnd, ?int $spaceId = null): Collection
     {
         $query = Reservation::with('space')

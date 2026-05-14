@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VideoConf Dashboard Futurista</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg: #0A0E1A;
+      --bg-soft: #0F1628;
+      --surface: rgba(20, 29, 47, 0.88);
+      --surface-2: rgba(27, 39, 64, 0.92);
+      --surface-3: rgba(13, 20, 35, 0.9);
+      --border: rgba(255,255,255,0.08);
+      --border-strong: rgba(0,194,203,0.22);
+      --text: #EAF2FF;
+      --text-soft: #9FB2D1;
+      --accent: #00C2CB;
+      --accent-2: #5AE6FF;
+      --violet: #8B5CF6;
+      --pink: #F472B6;
+      --warning: #F59E0B;
+      --success: #22C55E;
+      --danger: #EF4444;
+      --shadow: 0 20px 48px rgba(0,0,0,.34);
+      --glow: 0 0 0 1px rgba(0,194,203,.14), 0 0 32px rgba(0,194,203,.12);
+      --grid-line: rgba(255,255,255,0.04);
+    }
+
+    body.light {
+      --bg: #F3F7FC;
+      --bg-soft: #EAF1F8;
+      --surface: rgba(255,255,255,0.92);
+      --surface-2: rgba(248,250,252,0.96);
+      --surface-3: rgba(241,245,249,0.92);
+      --border: rgba(15, 23, 42, 0.08);
+      --border-strong: rgba(0,168,176,0.18);
+      --text: #0F172A;
+      --text-soft: #5B6B85;
+      --accent: #00A8B0;
+      --accent-2: #38BDF8;
+      --violet: #7C3AED;
+      --pink: #DB2777;
+      --shadow: 0 16px 34px rgba(15, 23, 42, 0.08);
+      --glow: 0 0 0 1px rgba(0,168,176,.08), 0 0 24px rgba(0,168,176,.06);
+      --grid-line: rgba(15,23,42,0.05);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      background:
+        radial-gradient(circle at 0% 0%, rgba(0,194,203,.12), transparent 24%),
+        radial-gradient(circle at 100% 0%, rgba(139,92,246,.10), transparent 22%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg-soft) 100%);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      transition: background-color .2s ease, color .2s ease;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(var(--grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+      background-size: 28px 28px;
+      mask-image: radial-gradient(circle at center, black 55%, transparent 100%);
+      opacity: .55;
+    }
+
+    .dashboard {
+      position: relative;
+      max-width: 1480px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-mark {
+      width: 50px;
+      height: 50px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      display: grid;
+      place-items: center;
+      color: #041018;
+      font-weight: 900;
+      letter-spacing: .06em;
+      box-shadow: 0 0 30px rgba(0,194,203,.24);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border-strong);
+      background: rgba(0,194,203,0.08);
+      color: var(--accent-2);
+      font-size: .78rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: clamp(1.5rem, 2vw, 2.1rem);
+      letter-spacing: .3px;
+    }
+
+    .brand p {
+      margin: 5px 0 0;
+      color: var(--text-soft);
+      font-size: .96rem;
+      max-width: 720px;
+    }
+
+    .topbar-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .ghost-btn,
+    .toggle-btn,
+    .export-btn,
+    .filter-select,
+    .search-input {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      border-radius: 14px;
+      min-height: 46px;
+      padding: 0 14px;
+      outline: none;
+      backdrop-filter: blur(12px);
+    }
+
+    .ghost-btn,
+    .toggle-btn,
+    .export-btn {
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .toggle-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: var(--glow);
+    }
+
+    .toggle-indicator {
+      width: 38px;
+      height: 20px;
+      border-radius: 999px;
+      background: rgba(0,194,203,.15);
+      position: relative;
+      display: inline-block;
+    }
+
+    .toggle-indicator::after {
+      content: "";
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 12px rgba(0,194,203,.35);
+      transition: transform .2s ease;
+    }
+
+    body.light .toggle-indicator::after {
+      transform: translateX(18px);
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+
+    .card {
+      position: relative;
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)), var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      backdrop-filter: blur(14px);
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(135deg, rgba(0,194,203,.25), rgba(90,230,255,.04), rgba(139,92,246,.18));
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+    }
+
+    .metric-card {
+      padding: 20px;
+      min-height: 146px;
+    }
+
+    .metric-card::after {
+      content: "";
+      position: absolute;
+      right: -22px;
+      bottom: -22px;
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,194,203,.22), transparent 70%);
+      filter: blur(6px);
+    }
+
+    .metric-label {
+      color: var(--text-soft);
+      font-size: .92rem;
+      margin-bottom: 14px;
+    }
+
+    .metric-value {
+      font-size: clamp(1.8rem, 2vw, 2.5rem);
+      font-weight: 900;
+      letter-spacing: .3px;
+      margin-bottom: 8px;
+    }
+
+    .metric-trend {
+      font-size: .92rem;
+      font-weight: 700;
+    }
+
+    .trend-up { color: var(--success); }
+    .trend-neutral { color: var(--text-soft); }
+    .trend-down { color: var(--danger); }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.65fr) minmax(320px, .95fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .stack {
+      display: grid;
+      gap: 20px;
+    }
+
+    .section-card {
+      padding: 20px;
+      box-shadow: var(--shadow), var(--glow);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: 1.08rem;
+      font-weight: 800;
+      letter-spacing: .01em;
+    }
+
+    .section-subtitle {
+      margin: 6px 0 0;
+      color: var(--text-soft);
+      font-size: .92rem;
+    }
+
+    .chart-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(280px, .8fr);
+      gap: 18px;
+    }
+
+    .chart-panel {
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent), var(--surface-3);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 16px;
+      min-height: 330px;
+    }
+
+    .chart-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .chart-label h3 {
+      margin: 0;
+      font-size: .98rem;
+      font-weight: 800;
+    }
+
+    .chart-label span {
+      color: var(--text-soft);
+      font-size: .86rem;
+    }
+
+    .chart-wrap {
+      height: 260px;
+    }
+
+    .donut-wrap {
+      height: 240px;
+      display: grid;
+      place-items: center;
+    }
+
+    .mini-legend {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+    }
+
+    .legend-left {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+      box-shadow: 0 0 10px currentColor;
+    }
+
+    .table-controls {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .search-input {
+      flex: 1 1 260px;
+    }
+
+    .filter-select,
+    .export-btn {
+      min-width: 180px;
+    }
+
+    .export-btn {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #041018;
+      border-color: transparent;
+      font-weight: 900;
+      box-shadow: 0 0 24px rgba(0,194,203,.22);
+    }
+
+    .table-wrap {
+      width: 100%;
+      overflow: auto;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+    }
+
+    thead th {
+      text-align: left;
+      font-size: .82rem;
+      color: var(--text-soft);
+      font-weight: 800;
+      padding: 14px 16px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+    }
+
+    tbody td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: .95rem;
+    }
+
+    tbody tr:hover {
+      background: rgba(255,255,255,0.025);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: .8rem;
+      font-weight: 800;
+      letter-spacing: .02em;
+      text-transform: capitalize;
+    }
+
+    .badge.confirmada {
+      color: #D9FFF1;
+      background: rgba(34,197,94,.18);
+      border: 1px solid rgba(34,197,94,.24);
+    }
+
+    .badge.pendiente {
+      color: #FFF4D8;
+      background: rgba(245,158,11,.18);
+      border: 1px solid rgba(245,158,11,.24);
+    }
+
+    .badge.cancelada {
+      color: #FFE1E1;
+      background: rgba(239,68,68,.16);
+      border: 1px solid rgba(239,68,68,.22);
+    }
+
+    .agenda-item {
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .agenda-item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .agenda-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .agenda-time {
+      min-width: 66px;
+      font-weight: 900;
+      color: var(--accent-2);
+      text-shadow: 0 0 14px rgba(90,230,255,.22);
+    }
+
+    .agenda-room {
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .agenda-meta,
+    .footer-note,
+    .muted {
+      color: var(--text-soft);
+      font-size: .9rem;
+    }
+
+    .empty-state {
+      padding: 24px;
+      text-align: center;
+      color: var(--text-soft);
+    }
+
+    .footer-note {
+      margin-top: 18px;
+    }
+
+    @media (max-width: 1240px) {
+      .metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .main-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 980px) {
+      .chart-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 720px) {
+      .dashboard { padding: 16px; }
+      .metrics-grid { grid-template-columns: 1fr; }
+      .topbar { align-items: stretch; }
+      .topbar-actions { width: 100%; }
+      .toggle-btn { width: 100%; justify-content: center; }
+      .section-card { padding: 16px; }
+      .chart-wrap { height: 230px; }
+      .donut-wrap { height: 210px; }
+      .table-controls { flex-direction: column; }
+      .filter-select, .export-btn, .search-input { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <main class="dashboard">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">VC</div>
+        <div>
+          <div class="eyebrow">Control Center</div>
+          <h1>VideoConf Dashboard</h1>
+          <p>Base visual conservada, ahora con una capa más futurista y analítica: barras neon, pastel/donut operativo y paneles tipo glass UI.</p>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <button id="themeToggle" class="toggle-btn" aria-label="Cambiar modo oscuro o claro">
+          <span class="toggle-indicator" aria-hidden="true"></span>
+          <span id="themeLabel">Modo claro</span>
+        </button>
+      </div>
+    </header>
+
+    <section class="metrics-grid" id="metricsGrid"></section>
+
+    <section class="main-grid">
+      <div class="stack">
+        <article class="card section-card">
+          <div class="section-header">
+            <div>
+              <h2 class="section-title">Analítica visual</h2>
+              <p class="section-subtitle">Reservas por día en barras y distribución por estado en gráfico pastel tipo donut</p>
+            </div>
+            <button class="ghost-btn" id="refreshDataBtn">Actualizar vista</button>
+          </div>
+
+          <div class="chart-grid">
+            <div class="chart-panel">
+              <div class="chart-label">
+                <h3>Reservas por día · últimos 30 días</h3>
+                <span>Gráfico de barras con acento cyan</span>
+              </div>
+              <div class="chart-wrap">
+                <canvas id="reservasBarChart"></canvas>
+              </div>
+            </div>
+
+            <div class="chart-panel">
+              <div class="chart-label">
+                <h3>Estados de reservas</h3>
+                <span>Pastel futurista tipo donut</span>
+              </div>
+              <div class="donut-wrap">
+                <canvas id="statusDonutChart"></canvas>
+              </div>
+              <div id="statusLegend" class="mini-legend"></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card section-card">
+          <div class="section-header">
+            <div>
+              <h2 class="section-title">Reservas recientes</h2>
+              <p class="section-subtitle">Búsqueda instantánea, filtro por estado y exportación CSV simulada</p>
+            </div>
+          </div>
+
+          <div class="table-controls">
+            <input id="searchInput" class="search-input" type="text" placeholder="Buscar por sala, usuario o fecha" />
+            <select id="statusFilter" class="filter-select" aria-label="Filtrar por estado">
+              <option value="todas">Todos los estados</option>
+              <option value="pendiente">Pendiente</option>
+              <option value="confirmada">Confirmada</option>
+              <option value="cancelada">Cancelada</option>
+            </select>
+            <button id="exportCsvBtn" class="export-btn">Exportar CSV</button>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Sala</th>
+                  <th>Usuario</th>
+                  <th>Fecha</th>
+                  <th>Hora inicio</th>
+                  <th>Hora fin</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody id="reservasTableBody"></tbody>
+            </table>
+          </div>
+          <div id="tableMeta" class="footer-note"></div>
+        </article>
+      </div>
+
+      <aside class="stack">
+        <article class="card section-card">
+          <div class="section-header">
+            <div>
+              <h2 class="section-title">Salas más populares</h2>
+              <p class="section-subtitle">Ocupación comparativa en barras horizontales</p>
+            </div>
+          </div>
+          <div class="chart-wrap" style="height: 320px;">
+            <canvas id="roomsBarChart"></canvas>
+          </div>
+        </article>
+
+        <article class="card section-card">
+          <div class="section-header">
+            <div>
+              <h2 class="section-title">Próximas reservas de hoy</h2>
+              <p class="section-subtitle">Agenda operativa del día</p>
+            </div>
+          </div>
+          <div id="todayAgenda"></div>
+        </article>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const dashboardData = {
+      metrics: {
+        activeRooms: 18,
+        reservationsToday: 42,
+        onlineUsers: 126,
+        monthRevenue: 18460
+      },
+      bookingTrend: [22,24,23,26,28,29,25,31,33,36,35,34,37,39,42,40,44,45,43,46,48,47,50,49,51,53,52,54,56,58],
+      rooms: [
+        { name: 'Sala Atlas', occupation: 92, reservations: 121 },
+        { name: 'Sala Boreal', occupation: 87, reservations: 114 },
+        { name: 'Sala Nébula', occupation: 81, reservations: 102 },
+        { name: 'Sala Prisma', occupation: 76, reservations: 96 },
+        { name: 'Sala Quantum', occupation: 69, reservations: 88 }
+      ],
+      todayAgenda: [
+        { time: '09:00', room: 'Sala Atlas', user: 'María Ortega', status: 'confirmada' },
+        { time: '10:30', room: 'Sala Boreal', user: 'Carlos Vega', status: 'pendiente' },
+        { time: '12:00', room: 'Sala Nébula', user: 'Andrea Luna', status: 'confirmada' },
+        { time: '15:00', room: 'Sala Prisma', user: 'Lucía Ramos', status: 'confirmada' },
+        { time: '17:30', room: 'Sala Quantum', user: 'Javier Paredes', status: 'pendiente' }
+      ],
+      recentReservations: [
+        { room: 'Sala Atlas', user: 'María Ortega', date: '2026-05-14', start: '09:00', end: '10:00', status: 'confirmada' },
+        { room: 'Sala Boreal', user: 'Carlos Vega', date: '2026-05-14', start: '10:30', end: '11:15', status: 'pendiente' },
+        { room: 'Sala Prisma', user: 'Daniel Soto', date: '2026-05-14', start: '11:00', end: '12:30', status: 'confirmada' },
+        { room: 'Sala Nébula', user: 'Andrea Luna', date: '2026-05-14', start: '12:00', end: '13:00', status: 'confirmada' },
+        { room: 'Sala Quantum', user: 'Javier Paredes', date: '2026-05-14', start: '17:30', end: '18:30', status: 'pendiente' },
+        { room: 'Sala Atlas', user: 'Elena Ruiz', date: '2026-05-13', start: '16:00', end: '17:00', status: 'cancelada' },
+        { room: 'Sala Boreal', user: 'Pablo Jiménez', date: '2026-05-13', start: '14:00', end: '15:00', status: 'confirmada' },
+        { room: 'Sala Prisma', user: 'Marta Gil', date: '2026-05-13', start: '09:30', end: '10:30', status: 'confirmada' },
+        { room: 'Sala Nébula', user: 'Noelia Torres', date: '2026-05-12', start: '18:00', end: '19:30', status: 'pendiente' },
+        { room: 'Sala Quantum', user: 'Iván Crespo', date: '2026-05-12', start: '13:00', end: '14:00', status: 'confirmada' },
+        { room: 'Sala Aurora', user: 'Raúl Medina', date: '2026-05-12', start: '11:30', end: '12:00', status: 'cancelada' },
+        { room: 'Sala Atlas', user: 'Camila Navarro', date: '2026-05-11', start: '15:30', end: '16:30', status: 'confirmada' },
+        { room: 'Sala Boreal', user: 'Óscar Vidal', date: '2026-05-11', start: '10:00', end: '11:00', status: 'pendiente' },
+        { room: 'Sala Nébula', user: 'Valentina León', date: '2026-05-11', start: '08:30', end: '09:15', status: 'confirmada' },
+        { room: 'Sala Prisma', user: 'Hugo Martín', date: '2026-05-10', start: '17:00', end: '18:00', status: 'confirmada' },
+        { room: 'Sala Quantum', user: 'Paula Ríos', date: '2026-05-10', start: '12:30', end: '13:30', status: 'cancelada' },
+        { room: 'Sala Aurora', user: 'Natalia Bosch', date: '2026-05-10', start: '09:00', end: '10:00', status: 'confirmada' },
+        { room: 'Sala Atlas', user: 'Sergio Cano', date: '2026-05-09', start: '16:00', end: '17:00', status: 'confirmada' }
+      ]
+    };
+
+    const metricsConfig = [
+      { label: 'Total de salas activas', value: dashboardData.metrics.activeRooms, trend: '+2 vs ayer', trendClass: 'trend-up' },
+      { label: 'Reservas del día', value: dashboardData.metrics.reservationsToday, trend: '+8% esta semana', trendClass: 'trend-up' },
+      { label: 'Usuarios conectados ahora', value: dashboardData.metrics.onlineUsers, trend: 'Pico a las 11:00', trendClass: 'trend-neutral' },
+      { label: 'Ingresos del mes en USD', value: new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(dashboardData.metrics.monthRevenue), trend: '+12% vs mes anterior', trendClass: 'trend-up' }
+    ];
+
+    const statusConfig = {
+      confirmada: { label: 'Confirmadas', color: '#00C2CB' },
+      pendiente: { label: 'Pendientes', color: '#F59E0B' },
+      cancelada: { label: 'Canceladas', color: '#8B5CF6' }
+    };
+
+    const metricsGrid = document.getElementById('metricsGrid');
+    const reservasTableBody = document.getElementById('reservasTableBody');
+    const todayAgenda = document.getElementById('todayAgenda');
+    const searchInput = document.getElementById('searchInput');
+    const statusFilter = document.getElementById('statusFilter');
+    const tableMeta = document.getElementById('tableMeta');
+    const exportCsvBtn = document.getElementById('exportCsvBtn');
+    const themeToggle = document.getElementById('themeToggle');
+    const themeLabel = document.getElementById('themeLabel');
+    const refreshDataBtn = document.getElementById('refreshDataBtn');
+    const statusLegend = document.getElementById('statusLegend');
+
+    const formatDate = (dateString) => {
+      const date = new Date(dateString + 'T00:00:00');
+      return new Intl.DateTimeFormat('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }).format(date);
+    };
+
+    const getLast30DaysLabels = () => {
+      const base = new Date('2026-05-14T00:00:00');
+      return Array.from({ length: 30 }, (_, index) => {
+        const date = new Date(base);
+        date.setDate(base.getDate() - 29 + index);
+        return new Intl.DateTimeFormat('es-ES', { day: '2-digit', month: 'short' }).format(date);
+      });
+    };
+
+    const getStatusStats = () => {
+      return dashboardData.recentReservations.reduce((acc, item) => {
+        acc[item.status] = (acc[item.status] || 0) + 1;
+        return acc;
+      }, { confirmada: 0, pendiente: 0, cancelada: 0 });
+    };
+
+    function getCssVar(name) {
+      return getComputedStyle(document.body).getPropertyValue(name).trim();
+    }
+
+    function renderMetrics() {
+      metricsGrid.innerHTML = metricsConfig.map(metric => `
+        <article class="card metric-card">
+          <div class="metric-label">${metric.label}</div>
+          <div class="metric-value">${metric.value}</div>
+          <div class="metric-trend ${metric.trendClass}">${metric.trend}</div>
+        </article>
+      `).join('');
+    }
+
+    function renderTodayAgenda() {
+      todayAgenda.innerHTML = dashboardData.todayAgenda.map(item => `
+        <div class="agenda-item">
+          <div class="agenda-top">
+            <div class="agenda-time">${item.time}</div>
+            <span class="badge ${item.status}">${item.status}</span>
+          </div>
+          <div class="agenda-room">${item.room}</div>
+          <div class="agenda-meta">${item.user}</div>
+        </div>
+      `).join('');
+    }
+
+    function getFilteredReservations() {
+      const query = searchInput.value.trim().toLowerCase();
+      const selectedStatus = statusFilter.value;
+
+      return dashboardData.recentReservations.filter(item => {
+        const haystack = `${item.room} ${item.user} ${item.date} ${item.start} ${item.end} ${item.status}`.toLowerCase();
+        const matchesQuery = !query || haystack.includes(query);
+        const matchesStatus = selectedStatus === 'todas' || item.status === selectedStatus;
+        return matchesQuery && matchesStatus;
+      });
+    }
+
+    function renderReservationsTable() {
+      const filtered = getFilteredReservations();
+
+      if (!filtered.length) {
+        reservasTableBody.innerHTML = `
+          <tr>
+            <td colspan="6" class="empty-state">No hay reservas que coincidan con la búsqueda actual.</td>
+          </tr>
+        `;
+        tableMeta.textContent = '0 resultados visibles';
+        return;
+      }
+
+      reservasTableBody.innerHTML = filtered.map(item => `
+        <tr>
+          <td>${item.room}</td>
+          <td>${item.user}</td>
+          <td>${formatDate(item.date)}</td>
+          <td>${item.start}</td>
+          <td>${item.end}</td>
+          <td><span class="badge ${item.status}">${item.status}</span></td>
+        </tr>
+      `).join('');
+
+      tableMeta.textContent = `${filtered.length} de ${dashboardData.recentReservations.length} reservas visibles`;
+    }
+
+    function exportReservationsCsv() {
+      const rows = getFilteredReservations();
+      const headers = ['sala', 'usuario', 'fecha', 'hora_inicio', 'hora_fin', 'estado'];
+      const csvRows = [headers.join(',')].concat(
+        rows.map(row => [row.room, row.user, row.date, row.start, row.end, row.status]
+          .map(value => `"${String(value).replaceAll('"', '""')}"`).join(','))
+      );
+
+      const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'videoconf_reservas.csv';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function renderStatusLegend() {
+      const stats = getStatusStats();
+      statusLegend.innerHTML = Object.entries(statusConfig).map(([key, cfg]) => `
+        <div class="legend-item">
+          <div class="legend-left">
+            <span class="legend-dot" style="background:${cfg.color}; color:${cfg.color};"></span>
+            <span>${cfg.label}</span>
+          </div>
+          <strong>${stats[key]}</strong>
+        </div>
+      `).join('');
+    }
+
+    function baseChartOptions() {
+      const textSoft = getCssVar('--text-soft');
+      const gridColor = document.body.classList.contains('light') ? 'rgba(15,23,42,0.06)' : 'rgba(255,255,255,0.05)';
+      const borderColor = getCssVar('--border');
+      const tooltipBg = document.body.classList.contains('light') ? '#FFFFFF' : '#101826';
+      const tooltipTitle = getCssVar('--text');
+      const tooltipBody = getCssVar('--text-soft');
+
+      return { textSoft, gridColor, borderColor, tooltipBg, tooltipTitle, tooltipBody };
+    }
+
+    function createBarChart() {
+      const { textSoft, gridColor, borderColor, tooltipBg, tooltipTitle, tooltipBody } = baseChartOptions();
+      const ctx = document.getElementById('reservasBarChart');
+      const accent = getCssVar('--accent');
+      const accent2 = getCssVar('--accent-2');
+
+      window.reservasBarChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: getLast30DaysLabels(),
+          datasets: [{
+            label: 'Reservas',
+            data: dashboardData.bookingTrend,
+            borderRadius: 10,
+            borderSkipped: false,
+            backgroundColor: (context) => {
+              const chart = context.chart;
+              const { ctx, chartArea } = chart;
+              if (!chartArea) return accent;
+              const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+              gradient.addColorStop(0, 'rgba(0,194,203,0.28)');
+              gradient.addColorStop(.55, accent);
+              gradient.addColorStop(1, accent2);
+              return gradient;
+            },
+            hoverBackgroundColor: accent2,
+            maxBarThickness: 18
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: tooltipBg,
+              titleColor: tooltipTitle,
+              bodyColor: tooltipBody,
+              borderColor,
+              borderWidth: 1,
+              padding: 12,
+              displayColors: false
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { color: textSoft, maxRotation: 0, autoSkip: true }
+            },
+            y: {
+              beginAtZero: true,
+              grid: { color: gridColor },
+              ticks: { color: textSoft }
+            }
+          }
+        }
+      });
+    }
+
+    function createRoomsChart() {
+      const { textSoft, gridColor, borderColor, tooltipBg, tooltipTitle, tooltipBody } = baseChartOptions();
+      const ctx = document.getElementById('roomsBarChart');
+      const colors = [getCssVar('--accent'), getCssVar('--accent-2'), '#8B5CF6', '#F472B6', '#22C55E'];
+
+      window.roomsBarChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: dashboardData.rooms.map(room => room.name),
+          datasets: [{
+            label: 'Ocupación %',
+            data: dashboardData.rooms.map(room => room.occupation),
+            backgroundColor: colors.map(color => color + (color.startsWith('#') ? '' : '')),
+            borderRadius: 12,
+            borderSkipped: false
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: tooltipBg,
+              titleColor: tooltipTitle,
+              bodyColor: tooltipBody,
+              borderColor,
+              borderWidth: 1
+            }
+          },
+          scales: {
+            x: {
+              beginAtZero: true,
+              max: 100,
+              grid: { color: gridColor },
+              ticks: { color: textSoft, callback: value => value + '%' }
+            },
+            y: {
+              grid: { display: false },
+              ticks: { color: textSoft }
+            }
+          }
+        }
+      });
+    }
+
+    function createDonutChart() {
+      const { borderColor, tooltipBg, tooltipTitle, tooltipBody } = baseChartOptions();
+      const ctx = document.getElementById('statusDonutChart');
+      const stats = getStatusStats();
+      const colors = [statusConfig.confirmada.color, statusConfig.pendiente.color, statusConfig.cancelada.color];
+
+      window.statusDonutChartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Confirmadas', 'Pendientes', 'Canceladas'],
+          datasets: [{
+            data: [stats.confirmada, stats.pendiente, stats.cancelada],
+            backgroundColor: colors,
+            borderColor: document.body.classList.contains('light') ? '#FFFFFF' : '#0A0E1A',
+            borderWidth: 6,
+            hoverOffset: 4,
+            cutout: '68%'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: tooltipBg,
+              titleColor: tooltipTitle,
+              bodyColor: tooltipBody,
+              borderColor,
+              borderWidth: 1
+            }
+          }
+        },
+        plugins: [{
+          id: 'centerText',
+          afterDraw(chart) {
+            const { ctx, chartArea: { width, height } } = chart;
+            ctx.save();
+            ctx.textAlign = 'center';
+            ctx.fillStyle = getCssVar('--text-soft');
+            ctx.font = '600 12px Inter, sans-serif';
+            ctx.fillText('Reservas', width / 2, height / 2 - 6);
+            ctx.fillStyle = getCssVar('--text');
+            ctx.font = '800 28px Inter, sans-serif';
+            ctx.fillText(Object.values(stats).reduce((a, b) => a + b, 0), width / 2, height / 2 + 22);
+            ctx.restore();
+          }
+        }]
+      });
+    }
+
+    function destroyCharts() {
+      ['reservasBarChartInstance', 'roomsBarChartInstance', 'statusDonutChartInstance'].forEach(key => {
+        if (window[key]) {
+          window[key].destroy();
+          window[key] = null;
+        }
+      });
+    }
+
+    function renderCharts() {
+      destroyCharts();
+      createBarChart();
+      createRoomsChart();
+      createDonutChart();
+      renderStatusLegend();
+    }
+
+    function applyStoredTheme() {
+      const savedTheme = localStorage.getItem('videoconf-theme') || 'dark';
+      document.body.classList.toggle('light', savedTheme === 'light');
+      themeLabel.textContent = savedTheme === 'light' ? 'Modo oscuro' : 'Modo claro';
+    }
+
+    function toggleTheme() {
+      const isLight = document.body.classList.toggle('light');
+      localStorage.setItem('videoconf-theme', isLight ? 'light' : 'dark');
+      themeLabel.textContent = isLight ? 'Modo oscuro' : 'Modo claro';
+      renderCharts();
+    }
+
+    function refreshView() {
+      renderMetrics();
+      renderTodayAgenda();
+      renderReservationsTable();
+      renderCharts();
+    }
+
+    searchInput.addEventListener('input', renderReservationsTable);
+    statusFilter.addEventListener('change', renderReservationsTable);
+    exportCsvBtn.addEventListener('click', exportReservationsCsv);
+    themeToggle.addEventListener('click', toggleTheme);
+    refreshDataBtn.addEventListener('click', refreshView);
+
+    applyStoredTheme();
+    renderMetrics();
+    renderTodayAgenda();
+    renderReservationsTable();
+    renderCharts();
+  </script>
+</body>
+</html>

@@ -28,6 +28,10 @@ interface ReservationRepositoryInterface
 
     public function getPendingReservations(int $limit = 10): Collection;
 
+    public function getTodayReservations(): Collection;
+
+    public function getRecentReservations(int $limit = 20): Collection;
+
     public function getCalendarReservations(string $weekStart, string $weekEnd, ?int $spaceId = null): Collection;
 
     public function getActiveForSpaceAndDate(int $spaceId, string $startDate, string $endDate): Collection;
