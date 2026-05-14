@@ -7,6 +7,8 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 import { Ziggy } from './ziggy';
 
+window.Ziggy = Ziggy;
+
 createInertiaApp({
     title: (title) => `${title} — Reservas VideoConf`,
     resolve: (name) => {
