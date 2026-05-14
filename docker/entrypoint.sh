@@ -7,8 +7,8 @@ PORT=${PORT:-8080}
 mkdir -p storage/logs storage/framework/sessions storage/framework/views storage/framework/cache/data bootstrap/cache database
 chown -R www-data:www-data storage bootstrap/cache 2>/dev/null || true
 chmod -R 775 storage bootstrap/cache 2>/dev/null || true
-if [ ! -f .env ] && [ -f .env.example ]; then
-    cp .env.example .env
+if [ ! -f .env ]; then
+    echo "" > .env
     php artisan key:generate --force
 fi
 
