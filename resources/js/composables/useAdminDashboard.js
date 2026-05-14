@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import { formatDate, formatTime } from '@/lib/formatters'
+import { exportCsv } from '@/lib/csv'
 
 export function useAdminDashboard() {
   const searchQuery = ref('')
@@ -14,22 +15,19 @@ export function useAdminDashboard() {
     })
   }
 
-  function exportCsv(reservas, filename = 'videoconf_reservas.csv') {
-    const headers = ['sala', 'usuario', 'fecha', 'inicio', 'fin', 'estado']
-    const rows = reservas.map(r => [
-      r.space_name, r.user_name,
-      formatDate(r.start_time), formatTime(r.start_time),
-      r.end_time ? formatTime(r.end_time) : '',
-      r.status
-    ].map(v => `"${String(v).replaceAll('"', '""')}"`).join(','))
-    const csv = [headers.join(','), ...rows].join('\n')
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
-    const link = document.createElement('a')
-    link.href = URL.createObjectURL(blob)
-    link.download = filename
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+  function downloadCsv(reservas, filename = 'videoconf_reservas.csv') {
+    exportCsv(reservas,
+      ['Sala', 'Usuario', 'Fecha', 'Inicio', 'Fin', 'Estado'],
+      [
+        r => r.space_name,
+        r => r.user_name,
+        r => formatDate(r.start_time),
+        r => formatTime(r.start_time),
+        r => r.end_time ? formatTime(r.end_time) : '—',
+        r => r.status,
+      ],
+      filename
+    )
   }
 
   const metricLabels = {
@@ -60,7 +58,7 @@ export function useAdminDashboard() {
     searchQuery,
     statusFilter,
     filteredReservations,
-    exportCsv,
+    downloadCsv,
     metricLabels,
     metricColors,
     statusBadgeColors,

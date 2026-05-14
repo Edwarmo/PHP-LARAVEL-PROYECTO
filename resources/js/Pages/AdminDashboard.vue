@@ -12,7 +12,7 @@ const props = defineProps({
 
 const {
   searchQuery, statusFilter,
-  filteredReservations, exportCsv,
+  filteredReservations, downloadCsv,
   metricLabels, metricColors, statusBadgeColors,
   formatDate, formatTime
 } = useAdminDashboard()
@@ -94,7 +94,7 @@ function statusText(status) {
                 <option value="cancelada">Cancelada</option>
                 <option value="finalizada">Finalizada</option>
               </select>
-              <button class="export-btn" @click="exportCsv(recientes)">Exportar CSV</button>
+              <button class="export-btn" @click="downloadCsv(filteredReservations(recientes))">Exportar CSV</button>
             </div>
 
             <div class="table-wrap">

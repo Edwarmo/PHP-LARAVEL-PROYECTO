@@ -9,6 +9,7 @@ import { Input } from '@/Components/ui'
 import { Label } from '@/Components/ui'
 import { useFilterNavigation } from '@/composables/useFilterNavigation'
 import { formatDate, formatTime } from '@/lib/formatters'
+import { exportCsv } from '@/lib/csv'
 
 const props = defineProps({
   reservations: Object,
@@ -28,6 +29,22 @@ const { navigate } = useFilterNavigation('/admin/reservations')
 
 function applyFilters() {
   navigate(form.value)
+}
+
+function downloadCsv() {
+  const items = reservations?.data ?? []
+  exportCsv(items,
+    ['Sala', 'Usuario', 'Fecha', 'Inicio', 'Fin', 'Estado'],
+    [
+      r => r.space_name,
+      r => r.user_name,
+      r => formatDate(r.start_time),
+      r => formatTime(r.start_time),
+      r => r.end_time ? formatTime(r.end_time) : '—',
+      r => r.status,
+    ],
+    'reservas.csv'
+  )
 }
 </script>
 
@@ -86,9 +103,12 @@ function applyFilters() {
             <Input type="date" v-model="form.to" class="h-9" />
           </div>
 
-          <div class="flex items-end">
+          <div class="flex items-end gap-2">
             <Button class="w-full bg-cyan text-black hover:bg-cyan/90" @click="applyFilters">
-              Filtrar Resultados
+              Filtrar
+            </Button>
+            <Button class="whitespace-nowrap border border-cyan/30 text-cyan hover:bg-cyan/10" variant="outline" @click="downloadCsv">
+              Exportar CSV
             </Button>
           </div>
         </div>
