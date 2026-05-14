@@ -1,11 +1,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { Head, router } from '@inertiajs/vue3'
+import { Head, Link, router } from '@inertiajs/vue3'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
-import StatusBadge from '@/Components/StatusBadge.vue'
-import { Card, CardContent } from '@/Components/ui'
-import { Button } from '@/Components/ui'
-import { Badge } from '@/Components/ui'
 
 const props = defineProps({
   reservations: Array,
@@ -44,6 +40,20 @@ const reservationsByDay = computed(() => {
   return byDay
 })
 
+const statusColors = {
+  pendiente: '#F59E0B',
+  confirmada: '#00C2CB',
+  rechazada: '#EF4444',
+  cancelada: '#8B5CF6',
+  finalizada: '#22C55E',
+}
+
+function statusColor(s) { return statusColors[s] ?? '#9FB2D1' }
+function statusText(s) {
+  const m = { pendiente: 'Pendiente', confirmada: 'Confirmada', rechazada: 'Rechazada', cancelada: 'Cancelada', finalizada: 'Finalizada' }
+  return m[s] ?? s
+}
+
 function navigateWeek(week) {
   router.get(`/admin/calendar?week=${week}&space_id=${selectedSpace.value || ''}`, {}, {
     preserveState: true
@@ -64,6 +74,14 @@ function formatTime(iso) {
   return new Date(iso).toTimeString().slice(0, 5)
 }
 
+function dayNumber(label) {
+  return label.split(' ')[1]?.split('/')[0] || ''
+}
+
+function dayName(label) {
+  return label.split(' ')[0] || ''
+}
+
 watch(selectedSpace, (val) => {
   router.get(`/admin/calendar?week=${props.weekStart}&space_id=${val || ''}`, {}, { preserveState: true })
 })
@@ -72,52 +90,66 @@ watch(selectedSpace, (val) => {
 <template>
   <Head title="Calendario Semanal" />
   <PublicLayout>
-    <div class="mx-auto max-w-7xl px-4 py-8">
-      <!-- Header -->
-      <div class="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-center">
-        <select
-          v-model="selectedSpace"
-          class="w-full border border-border bg-background px-4 py-3 text-sm md:w-auto md:py-2"
-        >
-          <option value="">Todos los espacios</option>
-          <option v-for="space in spaces" :key="space.id" :value="space.id">
-            {{ space.name }}
-          </option>
-        </select>
-
-        <div class="flex items-center justify-between gap-6 md:justify-start">
-          <Button variant="ghost" size="icon" @click="navigateWeek(prevWeek)">←</Button>
-          <h1 class="text-center text-xl font-light sm:text-2xl text-foreground">
-            {{ weekTitle }}
-          </h1>
-          <Button variant="ghost" size="icon" @click="navigateWeek(nextWeek)">→</Button>
+    <div class="dashboard-container">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark">CA</div>
+          <div>
+            <div class="eyebrow">Calendario</div>
+            <h1 class="brand-title">Vista Semanal</h1>
+            <p class="brand-sub">Programación de reservas por día y espacio</p>
+          </div>
         </div>
-      </div>
+        <div class="topbar-actions">
+          <Link href="/admin" class="ghost-btn">← Volver al panel</Link>
+        </div>
+      </header>
+
+      <!-- Week Navigator -->
+      <article class="card section-card" style="margin-bottom:20px">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">{{ weekTitle }}</h2>
+            <p class="section-subtitle">Selecciona un espacio o navega entre semanas</p>
+          </div>
+          <div class="topbar-actions">
+            <select v-model="selectedSpace" class="filter-select" aria-label="Filtrar por espacio">
+              <option value="">Todos los espacios</option>
+              <option v-for="space in spaces" :key="space.id" :value="space.id">{{ space.name }}</option>
+            </select>
+            <button class="ghost-btn" @click="navigateWeek(prevWeek)">← Semana anterior</button>
+            <button class="ghost-btn" @click="navigateWeek(nextWeek)">Semana siguiente →</button>
+          </div>
+        </div>
+      </article>
 
       <!-- Calendar Grid -->
       <div class="overflow-x-auto">
-        <div class="min-w-[700px]">
+        <div class="min-w-[800px]">
           <!-- Day Headers -->
-          <div class="mb-4 grid grid-cols-7 gap-2">
+          <div class="grid grid-cols-7 gap-3 mb-3">
             <div
               v-for="(day, i) in weekDays"
               :key="i"
-              class="text-center"
+              class="card"
+              :style="day.date === today ? 'box-shadow:0 0 0 1px rgba(0,194,203,.3), 0 0 24px rgba(0,194,203,.15)' : ''"
             >
-              <div class="font-mono text-xs uppercase text-muted-foreground">
-                {{ day.label.split(' ')[0] }}
-              </div>
-              <div
-                class="mt-1 text-xl font-light"
-                :class="{ 'border-b-2 border-cyan': day.date === today }"
-              >
-                {{ day.label.split(' ')[1].split('/')[0] }}
+              <div class="text-center py-3">
+                <div class="font-mono text-xs uppercase tracking-wider" style="color:#9FB2D1">
+                  {{ dayName(day.label) }}
+                </div>
+                <div
+                  class="mt-1 text-2xl font-bold"
+                  :style="{ color: day.date === today ? '#00C2CB' : '#EAF2FF' }"
+                >
+                  {{ dayNumber(day.label) }}
+                </div>
               </div>
             </div>
           </div>
 
           <!-- Slots Grid -->
-          <div class="grid grid-cols-7 gap-2">
+          <div class="grid grid-cols-7 gap-3">
             <div
               v-for="(dayReservations, dayIndex) in reservationsByDay"
               :key="dayIndex"
@@ -126,9 +158,11 @@ watch(selectedSpace, (val) => {
               <!-- Empty Slot -->
               <div
                 v-if="!dayReservations.length"
-                class="cursor-pointer border border-border p-3 text-center transition-colors hover:border-cyan"
+                class="card p-4 text-center cursor-pointer transition-all hover:shadow-lg"
               >
-                <Badge variant="outline" class="text-cyan">Disponible</Badge>
+                <span class="badge-custom" style="background:#00C2CB22;border-color:#00C2CB44;color:#00C2CB">
+                  Disponible
+                </span>
               </div>
 
               <!-- Reservations -->
@@ -136,19 +170,23 @@ watch(selectedSpace, (val) => {
                 v-for="reservation in dayReservations"
                 :key="reservation.slug"
                 @click="selectReservation(reservation)"
-                class="cursor-pointer border p-3 transition-colors"
-                :class="{
-                  'border-yellow-500/50 bg-yellow-500/10': reservation.status === 'pendiente',
-                  'border-cyan/50 bg-cyan/10': reservation.status !== 'pendiente'
+                class="card p-4 cursor-pointer transition-all hover:shadow-lg"
+                :style="{
+                  borderColor: statusColor(reservation.status) + '44',
+                  boxShadow: '0 0 0 1px ' + statusColor(reservation.status) + '22'
                 }"
               >
-                <div class="font-mono text-xs text-cyan">
+                <div class="font-mono text-xs font-bold" style="color:#5AE6FF;text-shadow:0 0 14px rgba(90,230,255,.18)">
                   {{ formatTime(reservation.start_time) }}
                 </div>
-                <div class="mt-1 text-sm text-muted-foreground">
+                <div class="mt-1 text-sm font-medium" style="color:#EAF2FF">
                   {{ reservation.user_name }}
                 </div>
-                <StatusBadge :status="reservation.status" class="mt-2" />
+                <div class="mt-1">
+                  <span class="badge-custom badge-sm" :style="{ background: statusColor(reservation.status) + '22', borderColor: statusColor(reservation.status) + '44', color: statusColor(reservation.status) }">
+                    {{ statusText(reservation.status) }}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -162,74 +200,66 @@ watch(selectedSpace, (val) => {
         leave-to-class="translate-x-full opacity-0"
         leave-active-class="transition-all duration-300"
       >
-        <Card
+        <div
           v-if="showPanel && selectedReservation"
-          class="fixed inset-y-0 right-0 z-50 w-full border-l sm:w-96"
+          class="card fixed inset-y-0 right-0 z-50 w-full sm:w-96 border-l overflow-y-auto"
+          style="border-radius:0;border-left:1px solid rgba(0,194,203,.2);box-shadow:-8px 0 40px rgba(0,0,0,.5)"
         >
-          <Button
-            variant="ghost"
-            size="icon"
-            class="absolute top-4 right-4"
-            @click="closePanel"
-          >
-            ×
-          </Button>
-
           <div class="p-6">
-            <div class="mb-4 font-mono text-xs uppercase tracking-wide text-muted-foreground">
-              Detalle de reserva
+            <div class="flex items-center justify-between mb-6">
+              <div class="eyebrow">Detalle</div>
+              <button @click="closePanel" class="ghost-btn" style="min-height:36px;padding:0 12px">×</button>
             </div>
 
-            <div class="space-y-4">
+            <div class="space-y-5">
               <div>
-                <div class="mb-1 font-mono text-xs text-muted-foreground">Espacio</div>
-                <div class="text-cyan">{{ selectedReservation.space_name }}</div>
+                <div class="filter-label mb-1">Espacio</div>
+                <div class="text-lg font-bold" style="color:#00C2CB">{{ selectedReservation.space_name }}</div>
               </div>
 
               <div>
-                <div class="mb-1 font-mono text-xs text-muted-foreground">Usuario</div>
-                <div class="text-foreground">{{ selectedReservation.user_name }}</div>
+                <div class="filter-label mb-1">Usuario</div>
+                <div style="color:#EAF2FF;font-weight:700">{{ selectedReservation.user_name }}</div>
               </div>
 
               <div>
-                <div class="mb-1 font-mono text-xs text-muted-foreground">Horario</div>
-                <div class="font-mono text-sm text-lime">
+                <div class="filter-label mb-1">Horario</div>
+                <div class="font-mono text-sm font-bold" style="color:#c8ff00">
                   {{ formatTime(selectedReservation.start_time) }} — {{ formatTime(selectedReservation.end_time) }}
                 </div>
               </div>
 
               <div>
-                <div class="mb-1 font-mono text-xs text-muted-foreground">Estado</div>
-                <StatusBadge :status="selectedReservation.status" />
+                <div class="filter-label mb-1">Estado</div>
+                <span class="badge-custom" :style="{ background: statusColor(selectedReservation.status) + '22', borderColor: statusColor(selectedReservation.status) + '44', color: statusColor(selectedReservation.status) }">
+                  {{ statusText(selectedReservation.status) }}
+                </span>
               </div>
             </div>
 
             <!-- Actions -->
             <div class="mt-8 space-y-2">
-              <Button
+              <button
                 v-if="selectedReservation.status === 'pendiente'"
-                variant="outline"
-                class="w-full border-cyan text-cyan hover:bg-cyan/10"
+                class="export-btn" style="width:100%;min-height:44px"
               >
                 Aceptar
-              </Button>
-              <Button
+              </button>
+              <button
                 v-if="selectedReservation.status === 'pendiente'"
-                variant="outline"
-                class="w-full border-destructive text-destructive hover:bg-destructive/10"
+                class="ghost-btn" style="width:100%;border-color:#EF444444;color:#EF4444"
               >
                 Rechazar
-              </Button>
-              <Button
+              </button>
+              <button
                 v-if="selectedReservation.status === 'confirmada'"
-                variant="outline"
-                class="w-full"
+                class="ghost-btn" style="width:100%"
               >
                 Cancelar
-              </Button>
+              </button>
             </div>
           </div>
-        </Card>
+        </div>
       </Transition>
     </div>
   </PublicLayout>

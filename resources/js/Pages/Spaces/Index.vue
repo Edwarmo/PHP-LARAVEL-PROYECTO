@@ -3,7 +3,6 @@ import { ref, computed, onMounted } from 'vue'
 import { Head } from '@inertiajs/vue3'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
 import SpaceCard from '@/Components/SpaceCard.vue'
-import { Input, Button } from '@/Components/ui'
 
 const props = defineProps({
   spaces: Object,
@@ -55,58 +54,47 @@ onMounted(async () => {
   <Head title="Salas Disponibles" />
   <PublicLayout>
     <!-- Hero -->
-    <div class="flex min-h-[12rem] flex-col items-center justify-center px-4">
-      <div class="font-mono text-xs uppercase tracking-[0.3em] text-center text-muted-foreground">
-        RESERVAS
-      </div>
-      <h1 ref="heroTitle" class="mt-2 text-center text-3xl sm:text-4xl md:text-5xl lg:text-7xl" style="font-family: 'Cormorant Garamond', serif;">
-        <span class="block font-light text-foreground sm:inline">Salas de </span>
-        <span class="mt-1 block text-cyan sm:mt-0 sm:inline">Videoconferencia</span>
+    <div ref="heroTitle" class="flex flex-col items-center justify-center py-8">
+      <div class="eyebrow">Reservas</div>
+      <h1 class="mt-4 text-center text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-light" style="font-family: 'Cormorant Garamond', serif; color:#EAF2FF">
+        Salas de <span class="text-cyan">Videoconferencia</span>
       </h1>
-      <p ref="heroSubtitle" class="mt-3 text-center text-sm md:text-base" style="font-family: 'DM Sans', sans-serif;">
+      <p ref="heroSubtitle" class="mt-4 text-center text-muted-foreground/80 text-base max-w-lg">
         Encuentra el espacio perfecto para tus reuniones virtuales
       </p>
     </div>
 
     <!-- Filters -->
-    <div ref="heroCta" class="mx-auto mt-8 max-w-7xl px-4">
-      <div class="border border-cyan/10 bg-background/20 backdrop-blur-2xl p-6 shadow-lg shadow-cyan/5">
-        <div class="flex flex-col gap-4 sm:flex-row">
-          <Input
-            v-model="search"
-            type="text"
-            placeholder="Buscar sala..."
-            class="flex-1"
-          />
-
-          <select
-            v-model="typeFilter"
-            class="h-9 w-full rounded-none border border-cyan/20 bg-background/60 px-3 text-xs text-foreground sm:w-48 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-cyan"
-          >
-            <option value="" class="bg-[#0c1018] text-foreground">Todos los tipos</option>
-            <option v-for="type in ['Sala Privada', 'Sala Pública']" :key="type" :value="type" class="bg-[#0c1018] text-foreground">{{ type }}</option>
-          </select>
+    <div ref="heroCta" class="mb-10">
+      <div class="card section-card">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Buscar salas</h2>
+            <p class="section-subtitle">Filtra por nombre, descripción o tipo</p>
+          </div>
+        </div>
+        <div class="filter-grid">
+          <div class="filter-group" style="grid-column: span 2;">
+            <label class="filter-label">Búsqueda</label>
+            <input v-model="search" type="text" placeholder="Buscar sala..." class="filter-input" />
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Tipo</label>
+            <select v-model="typeFilter" class="filter-select">
+              <option value="">Todos los tipos</option>
+              <option v-for="type in ['Sala Privada', 'Sala Pública']" :key="type" :value="type">{{ type }}</option>
+            </select>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Grid -->
-    <div class="mx-auto mt-10 max-w-7xl px-4">
-      <div ref="gridContainer" v-if="filteredSpaces.length > 0" class="grid grid-cols-1 gap-px border border-cyan/20 md:grid-cols-2 lg:grid-cols-3">
-        <div
-          v-for="space in filteredSpaces"
-          :key="space.id"
-          class="space-card-wrapper p-6"
-          style="background: var(--bg-base);"
-        >
-          <SpaceCard :space="space" />
-        </div>
-      </div>
-
-      <!-- Empty -->
-      <div v-else class="py-12 text-center font-mono text-xs text-muted-foreground">
-        — SIN RESULTADOS —
-      </div>
+    <div v-if="filteredSpaces.length > 0" ref="gridContainer" class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+      <SpaceCard v-for="space in filteredSpaces" :key="space.id" :space="space" />
     </div>
+
+    <!-- Empty -->
+    <div v-else class="empty-state">— SIN RESULTADOS —</div>
   </PublicLayout>
 </template>
