@@ -1,7 +1,7 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3'
 import PublicLayout from '@/Layouts/PublicLayout.vue'
-import { useAdminDashboard } from '@/composables/useAdminDashboard'
+import { useAdminDashboard } from '@/composables/useAdminDashboard.js'
 
 const props = defineProps({
   metrics: Object,
