@@ -50,6 +50,33 @@ onMounted(async () => {
 })
 </script>
 
+<style scoped>
+.minimal-input, .minimal-select {
+  background: color-mix(in oklab, var(--card) 40%, transparent);
+  border: 1px solid var(--border);
+  color: var(--foreground);
+  border-radius: 999px;
+  min-height: 44px;
+  padding: 0 18px;
+  outline: none;
+  font-size: .88rem;
+  backdrop-filter: blur(8px);
+  transition: border-color .2s, box-shadow .2s;
+}
+.minimal-input:focus, .minimal-select:focus {
+  border-color: #00C2CB;
+  box-shadow: 0 0 0 1px #00C2CB44;
+}
+.minimal-input { flex: 1 1 260px; }
+.minimal-select { min-width: 140px; cursor: pointer; }
+.minimal-select option { background: var(--background); color: var(--foreground); }
+
+.transparent-card :deep(.card) {
+  background: color-mix(in oklab, var(--card) 45%, transparent) !important;
+  backdrop-filter: blur(16px) !important;
+}
+</style>
+
 <template>
   <Head title="Salas Disponibles" />
   <PublicLayout>
@@ -65,33 +92,19 @@ onMounted(async () => {
     </div>
 
     <!-- Filters -->
-    <div ref="heroCta" class="mb-10">
-      <div class="card section-card">
-        <div class="section-header">
-          <div>
-            <h2 class="section-title">Buscar salas</h2>
-            <p class="section-subtitle">Filtra por nombre, descripción o tipo</p>
-          </div>
-        </div>
-        <div class="filter-grid">
-          <div class="filter-group" style="grid-column: span 2;">
-            <label class="filter-label">Búsqueda</label>
-            <input v-model="search" type="text" placeholder="Buscar sala..." class="filter-input" />
-          </div>
-          <div class="filter-group">
-            <label class="filter-label">Tipo</label>
-            <select v-model="typeFilter" class="filter-select">
-              <option value="">Todos los tipos</option>
-              <option v-for="type in ['Sala Privada', 'Sala Pública']" :key="type" :value="type">{{ type }}</option>
-            </select>
-          </div>
-        </div>
-      </div>
+    <div ref="heroCta" class="mb-10 flex items-center justify-center gap-3">
+      <input v-model="search" type="text" placeholder="Buscar sala..." class="minimal-input" />
+      <select v-model="typeFilter" class="minimal-select">
+        <option value="">Todas</option>
+        <option v-for="type in ['Sala Privada', 'Sala Pública']" :key="type" :value="type">{{ type }}</option>
+      </select>
     </div>
 
     <!-- Grid -->
     <div v-if="filteredSpaces.length > 0" ref="gridContainer" class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-      <SpaceCard v-for="space in filteredSpaces" :key="space.id" :space="space" />
+      <div v-for="space in filteredSpaces" :key="space.id" class="transparent-card">
+        <SpaceCard :space="space" />
+      </div>
     </div>
 
     <!-- Empty -->
