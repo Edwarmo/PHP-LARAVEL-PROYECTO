@@ -16,7 +16,7 @@ const props = defineProps({
 
 const selectedDate = ref(props.nextAvailableDays[0]?.date ?? null)
 
-const { slots: slotsForDate, loading: loadingSlots, fetchSlots } = useSlots(props.space.slug)
+const { slots: slotsForDate, loading: loadingSlots, error: slotsError, fetchSlots } = useSlots(props.space.slug)
 
 function selectDay(date) {
   selectedDate.value = date
@@ -101,7 +101,9 @@ onMounted(() => {
 
           <!-- Slots -->
           <div class="grid grid-cols-2 gap-px border border-cyan/20 lg:grid-cols-1">
-            <div v-if="loadingSlots" class="col-span-full py-8 text-center font-mono text-xs text-muted-foreground">cargando...</div>
+            <div v-if="slotsError" class="col-span-full py-8 text-center font-mono text-xs text-red-400">{{ slotsError }}</div>
+            <div v-else-if="loadingSlots" class="col-span-full py-8 text-center font-mono text-xs text-muted-foreground">cargando...</div>
+            <div v-else-if="!slotsForDate.length" class="col-span-full py-8 text-center font-mono text-xs text-muted-foreground">sin horarios disponibles</div>
             <Button
               v-else
               v-for="slot in slotsForDate"

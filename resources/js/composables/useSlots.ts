@@ -12,7 +12,7 @@ export function useSlots(spaceSlug: string) {
     error.value = null
 
     try {
-      const response = await fetch(route('api.slots', spaceSlug) + `?date=${date}`)
+      const response = await fetch(route('api.slots', spaceSlug, false) + `?date=${date}`)
       if (!response.ok) throw new Error('Error al cargar los horarios')
       const data = await response.json()
       slots.value = data.slots ?? []
