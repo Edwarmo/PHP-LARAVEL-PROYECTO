@@ -7,45 +7,49 @@ onMounted(async () => {
   const { gsap } = await import('gsap')
 
   ctx = gsap.context(() => {
-    document.querySelectorAll('.gsap-particle').forEach((el) => {
-      gsap.to(el, {
-        x: () => gsap.utils.random(-70, 70),
-        y: () => gsap.utils.random(-70, 70),
-        scale: () => gsap.utils.random(0.7, 1.9),
-        opacity: () => gsap.utils.random(0.15, 0.95),
-        duration: () => gsap.utils.random(3, 7),
+    requestAnimationFrame(() => {
+      document.querySelectorAll('.gsap-particle').forEach((el) => {
+        gsap.to(el, {
+          x: () => gsap.utils.random(-70, 70),
+          y: () => gsap.utils.random(-70, 70),
+          scale: () => gsap.utils.random(0.7, 1.9),
+          opacity: () => gsap.utils.random(0.15, 0.95),
+          duration: () => gsap.utils.random(3, 7),
+          ease: 'sine.inOut',
+          repeat: -1,
+          yoyo: true,
+          delay: () => gsap.utils.random(0, 2.5),
+        })
+      })
+    })
+
+    requestAnimationFrame(() => {
+      document.querySelectorAll('.gsap-line').forEach((el, i) => {
+        const len = el.getTotalLength?.() ?? 200
+        gsap.set(el, { strokeDasharray: len, strokeDashoffset: len })
+        gsap.to(el, {
+          strokeDashoffset: 0,
+          opacity: 0.25,
+          duration: gsap.utils.random(2.5, 5),
+          ease: 'power2.inOut',
+          repeat: -1,
+          yoyo: true,
+          delay: i * 0.4,
+        })
+      })
+
+      gsap.to('.gsap-grid', {
+        opacity: 0.1,
+        duration: 5,
         ease: 'sine.inOut',
         repeat: -1,
         yoyo: true,
-        delay: () => gsap.utils.random(0, 2.5),
       })
-    })
 
-    document.querySelectorAll('.gsap-line').forEach((el, i) => {
-      const len = el.getTotalLength?.() ?? 200
-      gsap.set(el, { strokeDasharray: len, strokeDashoffset: len })
-      gsap.to(el, {
-        strokeDashoffset: 0,
-        opacity: 0.25,
-        duration: gsap.utils.random(2.5, 5),
-        ease: 'power2.inOut',
-        repeat: -1,
-        yoyo: true,
-        delay: i * 0.4,
-      })
+      gsap.to('.orb-a', { x: 70, y: -50, scale: 1.2, duration: 9,  ease: 'sine.inOut', repeat: -1, yoyo: true })
+      gsap.to('.orb-b', { x: -60, y: 70, scale: 0.85, duration: 13, ease: 'sine.inOut', repeat: -1, yoyo: true })
+      gsap.to('.orb-c', { x: 30,  y: 40, scale: 1.15, duration: 11, ease: 'sine.inOut', repeat: -1, yoyo: true })
     })
-
-    gsap.to('.gsap-grid', {
-      opacity: 0.1,
-      duration: 5,
-      ease: 'sine.inOut',
-      repeat: -1,
-      yoyo: true,
-    })
-
-    gsap.to('.orb-a', { x: 70, y: -50, scale: 1.2, duration: 9,  ease: 'sine.inOut', repeat: -1, yoyo: true })
-    gsap.to('.orb-b', { x: -60, y: 70, scale: 0.85, duration: 13, ease: 'sine.inOut', repeat: -1, yoyo: true })
-    gsap.to('.orb-c', { x: 30,  y: 40, scale: 1.15, duration: 11, ease: 'sine.inOut', repeat: -1, yoyo: true })
   })
 })
 
