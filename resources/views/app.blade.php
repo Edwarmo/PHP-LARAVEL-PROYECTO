@@ -1,10 +1,20 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="description" content="VideoConf — Sistema de reservas de salas de videoconferencia. Gestiona y reserva espacios de manera eficiente.">
         <title inertia>{{ config('app.name') }}</title>
+
+        <script>
+          (function() {
+            var mode = localStorage.getItem('theme');
+            if (!mode) {
+              mode = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+            document.documentElement.classList.toggle('dark', mode === 'dark');
+          })();
+        </script>
 
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,7 +24,7 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         @inertiaHead
     </head>
-    <body class="antialiased bg-[#06080f] text-slate-200">
+    <body class="antialiased bg-background text-foreground">
         @inertia
     </body>
 </html>

@@ -9,6 +9,13 @@ import { Ziggy } from './ziggy';
 
 window.Ziggy = Ziggy;
 
+// Listen for system theme changes (only when no manual override)
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+  if (!localStorage.getItem('theme')) {
+    document.documentElement.classList.toggle('dark', e.matches);
+  }
+});
+
 createInertiaApp({
     title: (title) => `${title} — Reservas VideoConf`,
     resolve: (name) => {
