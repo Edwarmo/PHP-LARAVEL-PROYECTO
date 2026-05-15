@@ -47,13 +47,13 @@ export default defineConfig({
                 },
             },
         },
-        chunkSizeWarningLimit: 300,
+        chunkSizeWarningLimit: 250,
         cssCodeSplit: true,
         sourcemap: false,
         minify: 'esbuild',
     },
     optimizeDeps: {
-        include: ['animejs', 'gsap'],
+        include: ['gsap'],
     },
     test: {
         environment: 'happy-dom',

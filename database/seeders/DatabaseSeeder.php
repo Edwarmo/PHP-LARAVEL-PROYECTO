@@ -17,6 +17,6 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Administrador', 'password' => bcrypt('password')]
         );
 
-        $this->call([SpaceSeeder::class]);
+        $this->call([SpaceSeeder::class, DataSeeder::class]);
     }
 }

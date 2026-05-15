@@ -139,17 +139,19 @@
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
   html {
     @apply font-mono;
+    overscroll-behavior: none;
+  }
+  body {
+    @apply bg-background text-foreground;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: contain;
   }
   ::selection {
     @apply bg-cyan/20 text-foreground;
   }
 
-  /* select / option styling */
   select {
     @apply text-foreground;
   }
@@ -157,21 +159,20 @@
     @apply bg-[#0c1018] text-foreground;
   }
 
-  /* date input color scheme */
   input[type="date"]::-webkit-calendar-picker-indicator {
     filter: invert(0.7) sepia(1) hue-rotate(150deg);
     cursor: pointer;
   }
 
-  /* custom scrollbar */
-  ::-webkit-scrollbar {
-    @apply w-1;
-  }
-  ::-webkit-scrollbar-track {
-    @apply bg-transparent;
-  }
-  ::-webkit-scrollbar-thumb {
-    @apply bg-cyan/20 hover:bg-cyan/40 rounded-none;
+  ::-webkit-scrollbar { @apply w-1; }
+  ::-webkit-scrollbar-track { @apply bg-transparent; }
+  ::-webkit-scrollbar-thumb { @apply bg-cyan/20 hover:bg-cyan/40 rounded-none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }
 

@@ -65,12 +65,12 @@ final class ReservationController extends Controller
 
     public function history(Request $request): Response
     {
-        $email = $request->query('email', auth()->user()?->email);
-        $reservations = $this->reservationUseCase->getHistory($email);
+        $email = $request->query('email');
+        $reservations = $email ? $this->reservationUseCase->getHistory($email) : [];
 
         return Inertia::render('Reservations/History', [
             'reservations' => $reservations,
-            'email'        => $email,
+            'email'        => $email ?? '',
         ]);
     }
 }
